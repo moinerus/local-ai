@@ -29,6 +29,7 @@
 [CmdletBinding()]
 param(
     [switch] $Watch,
+    [switch] $ByProcess,
     [int]    $IntervalSeconds = 5,
     [string] $Label = ''
 )
@@ -70,6 +71,23 @@ function Get-GpuMemorySample {
     return $rows | Sort-Object MB -Descending
 }
 
+function Group-ByName {
+    param($Rows)
+
+    # Browsers and chat clients spread across many processes, so a per-pid list
+    # hides where the memory actually goes. Group before deciding what to close.
+    $Rows |
+        Group-Object Name |
+        ForEach-Object {
+            [pscustomobject]@{
+                Name      = $_.Name
+                Processes = $_.Count
+                MB        = [math]::Round(($_.Group | Measure-Object -Property MB -Sum).Sum, 1)
+            }
+        } |
+        Sort-Object MB -Descending
+}
+
 function Show-Sample {
     param([string] $Tag)
 
@@ -88,7 +106,12 @@ function Show-Sample {
     $headroom  = [math]::Round(($cardMb - $totalMb) / 1024, 2)
     Write-Host "assuming a 16384 MB card, headroom: $headroom GB"
 
-    $rows | Where-Object { $_.MB -ge 1 } | Format-Table -AutoSize
+    if ($ByProcess) {
+        $rows | Where-Object { $_.MB -ge 1 } | Format-Table -AutoSize
+    }
+    else {
+        Group-ByName -Rows $rows | Where-Object { $_.MB -ge 1 } | Format-Table -AutoSize
+    }
 }
 
 $tag = if ($Label) { "  [$Label]" } else { '' }
