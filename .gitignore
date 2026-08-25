@@ -1,0 +1,27 @@
+# Model weights and binaries. Never commit these.
+*.gguf
+*.bin
+*.safetensors
+*.onnx
+models/
+tts/
+bin/*.exe
+bin/*.dll
+
+# Runtime output
+logs/
+*.log
+bench/results/*.json
+bench/results/*.csv
+
+# Secrets and local overrides
+.env
+.env.*
+config/local.*
+*.key
+
+# Editor and OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
