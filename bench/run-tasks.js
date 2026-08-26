@@ -384,6 +384,14 @@ async function runOnce(task, opts, depth, seed) {
     reasoningChars: lastUsage.reasoningChars,
     finish: lastUsage.finish,
     output: final,
+    // A multi-turn task is scored against its own earlier turns, so those
+    // turns are the evidence, and dropping them makes the verdict unreadable
+    // afterwards. `self-report-edit` records "said 7 lines, its own output has
+    // 8" and the output it refers to was discarded, so the one result nobody
+    // can explain is also the one nothing on disk can explain. Same argument
+    // as toolLog below. Omitted for a single-turn task, where `output` is
+    // already the whole record.
+    turnOutputs: turns.length > 1 ? turnOutputs : undefined,
     // The record the tool-use checkers scored against, kept in the JSON so a
     // verdict can be read back against what the model actually did rather
     // than against what it said.

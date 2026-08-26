@@ -1,0 +1,136 @@
+{
+  "label": "qwen3coder-30b-selfreport",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "qwen3coder-30b-selfreport",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": [
+      "self-report-edit"
+    ],
+    "exec": true,
+    "python": "python3",
+    "padding": "turn",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "bench/results/2026-08-26-qwen3coder-30b-selfreport-turns.json"
+  },
+  "at": "2026-08-26T19:27:20.864Z",
+  "results": [
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 242,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19720,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}",
+          "turnOutputs": [
+            "```python\ndef classify(n):\n    if n < 0:\n        return \"negative\"\n    if n == 0:\n        return \"zero\"\n    if n % 2 == 0:\n        return \"even\"\n    return \"odd\"\n```",
+            "{\"lines\": 7, \"kept_variable_result\": false}"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -33,12 +33,13 @@
     can land there, run from system RAM at a fraction of the speed, and look
     like it worked.
 
-    -ncmoe 24 holds 24 layers of expert tensors off the card. It won a
-    ten-point sweep at two repetitions, and identical configurations minutes
-    apart returned tg128 of 45.11 and then 36.27. The run-to-run spread is
-    larger than the gap between neighbouring settings, so treat 24 as a
-    reading rather than a measurement. Open question 10 in the project notes
-    covers re-sweeping 20 to 28 on an idle desktop.
+    -ncmoe 24 holds 24 layers of expert tensors off the card. Re-swept 20 to
+    28 at five repetitions on 26 Aug 2026: 21 through 25 all land within one
+    standard deviation of each other, and 24 itself read tg128 38.62 +/- 1.14
+    against the 45.11 +/- 0.24 recorded hours earlier on a lighter desktop.
+    The variation between sessions is larger than the variation between
+    settings, so 24 is kept because nothing beats it rather than because it
+    won. Do not tune this number.
 
     No --chat-template-file. This model's own template works as built. qwen.ps1
     needs a patched one because Qwen3.5-9B's template rejects a system message

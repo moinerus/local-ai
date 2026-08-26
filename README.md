@@ -35,20 +35,118 @@ built with `-DGGML_VULKAN=ON`.
 | `serve/qwen3coder.ps1` | Starts llama-server on Qwen3-Coder-30B-A3B with the sparse experts held in system RAM |
 | `serve/qwen3.5-chat-template.jinja` | The model's chat template, one branch patched |
 | `serve/claude-local.sh` | Starts Claude Code in WSL against the local endpoint |
+| `serve/record-proxy.js` | Sits between Claude Code and llama-server and records every tool call, every tool result and the model's own prose. The witness for a live session |
+| `serve/test/` | Proofs for the proxy, plus a mutation run requiring each to be killed by its own named arm |
+| `bench/score-session.js` | Scores a live session's account of itself against the proxy log and against what changed on disk |
 
 ## Measured on this machine, 26 Aug 2026
 
-| Reading | Figure |
-| --- | --- |
-| Qwen3.5-9B Q6_K, 32k context, zero tokens | 7787.5 MiB |
-| The same, 27,525 tokens resident | 7816.9 MiB |
-| Total on card at 128k with a q8_0 KV cache | 13682.9 MiB, 2.56 GiB spare |
-| Prefill | 1909 tok/s over 27,525 tokens |
-| Decode | 67.97 tok/s |
+Three models, all measured on the same card on the same day with the resident
+whisper server up.
 
-The KV arithmetic that drove model selection estimated 9.2 GiB and the reading
-is 7.63 GiB, so it ran 1.6 GiB high. llama.cpp allocates the whole KV cache at
-load, which is why the zero-context reading is already the worst case.
+### Throughput
+
+`llama-bench` on `Vulkan0`. Every figure names its depth, because generation
+slows as the KV cache fills and a depth-zero figure answers a different question
+from a working-depth one. Every published tokens-per-second figure for these
+models, and every `llama-bench` row without `-d`, is a depth-zero figure.
+
+| Model | Weights | pp512 | tg at depth 0 | tg at 27,525 | Loss out to 27.5k |
+| --- | --- | ---: | ---: | ---: | ---: |
+| gpt-oss-20b MXFP4 | 11.27 GiB loaded | 3792.29 | 82.64 | 75.26 | 9% |
+| Qwen3.5-9B Q6_K | 7.63 GiB loaded | 2155.53 | 76.61 | 68.42 | 11% |
+| Qwen3-Coder-30B-A3B UD-Q4_K_XL, `-ncmoe 24` | 16.45 GiB on disk, experts in system RAM | 637.07 | 36.27 to 45.11 | 15.74 | 57% |
+
+gpt-oss-20b is faster than the 9B on every axis measured, from 2.3 times the
+parameter count, on a flatter curve. The 30B's depth-zero cell is a range
+because identical configurations minutes apart returned 45.11 and then 36.27,
+which is a wider spread than the gap between neighbouring `-ncmoe` values. Treat
+`-ncmoe 24` as a reading rather than a measurement. The depth arms are tight by
+comparison, +/- 0.10 to +/- 0.21.
+
+### On the card, served at 128k with a q8_0 KV cache
+
+llama-server rather than `llama-bench`, so these are not comparable to the rows
+above. The card total includes the desktop, which has been the largest variable
+all along: it read 2.58 GB at a fresh boot and 6.66 GB ninety minutes into a
+session, and the compositor alone moved by 3 GB.
+
+| Model | Card total | Headroom | Load | Generation through the API |
+| --- | ---: | ---: | ---: | ---: |
+| Qwen3.5-9B Q6_K | 13682.9 MiB | +2.56 GiB | | 67.97 over 27,525 resident |
+| gpt-oss-20b MXFP4 | 18535.7 MB | -2.18 GiB | 14 s | 79.28 |
+| Qwen3-Coder-30B-A3B | 19403.4 MB | -3.03 GiB | 21 s | |
+
+Negative headroom is not the refusal it reads as. The driver spills the
+difference to system memory and reports nothing, and on a sparse model the
+spilled portion is experts that most tokens never touch.
+
+The KV arithmetic that drove model selection estimated 9.2 GiB for the 9B and
+the reading is 7.63 GiB, so it ran 1.6 GiB high. llama.cpp allocates the whole
+KV cache at load, which is why the zero-context reading is already the worst
+case.
+
+### Scored on the task set
+
+Three repetitions at depths 0 and 25,000. `--padding` names the shape of the
+depth filler, and a tool-use figure does not mean much without it: see the
+padding section of `bench/README.md`.
+
+| Model | Eight text tasks, of 48 | Tool-use, `turn` | Tool-use, `system` |
+| --- | ---: | ---: | ---: |
+| gpt-oss-20b | 45 | 18/18 | 18/18 |
+| Qwen3-Coder-30B-A3B | 42 | 12/18 | 18/18 |
+| Qwen3.5-9B Q6_K, `--reasoning auto` | 36 | 18/18 | 12/18 |
+| Qwen3.5-9B Q6_K, `--reasoning off` | code and tool tasks only | 12/18 | 15/18 |
+
+Every one of the 30B's six losses was `self-report-edit`, which it fails 0 of 6
+by saying its rewritten function has 7 lines when its own output has 8,
+identically at both depths across every repetition. It is the only one of the
+three that miscounts its own text, and the only one trained for agentic tool
+use. Nothing here explains that pairing.
+
+Regenerate any of the scored figures with:
+
+```bash
+./bench/node22.sh bench/summarise.js bench/results/*.json
+```
+
+## Watching a live session
+
+The bench tool-use class scores a synthetic task against a sandbox it owns. A
+real session goes through Claude Code's own tools, which that sandbox never
+sees, so the class says nothing about the thirteen-minute multi-step run that
+started this. The tool calls still cross the wire, though: the model asks, and
+Claude Code sends the result back in the next request. A proxy in between
+records both, and the model's account can then be read against the record
+rather than believed.
+
+```bash
+./bench/node22.sh serve/record-proxy.js --port 8081 --out runs/session.jsonl
+LOCAL_LANE_PORT=8081 ./serve/claude-local.sh
+./bench/node22.sh bench/score-session.js runs/session.jsonl --baseline before.md5 --dir <fixture>
+```
+
+`claude-local.sh` already reads `LOCAL_LANE_PORT`, so nothing else changes.
+Both ends stay on loopback, because the upstream has no key and a proxy on a
+routable address would be an open endpoint in front of it.
+
+The scorer keeps three things apart on purpose: what the model asked for, what
+came back, and what changed on disk. A call that was made and failed is not the
+same as a file that changed, and merging them hides the case where the model
+asked for the right thing and got nothing. It exits 2 on a log holding no
+completed turns, because reporting no discrepancies from an empty record is the
+exact failure the whole exercise is about.
+
+Session logs are not committed. See the note in `.gitignore`.
+
+Proved by `serve/test/prove-proxy.js`, 12 arms against a stub upstream with no
+model involved, and `serve/test/mutate-proxy.sh`, 12 mutations each required to
+be killed by its own named arm. The arm that earns its place is the streaming
+one: Claude Code streams, and a tool call arrives split, with its name in
+`content_block_start` and its arguments accumulated across `input_json_delta`
+events. A parser reading only the first records a call with no arguments and
+looks like it worked.
 
 ## Constraints worth knowing before adding anything
 
@@ -95,3 +193,16 @@ watching.
 `--reasoning off` is worth setting on Qwen3.5-9B. It takes the code tasks from
 3 of 18 to 15 of 18 and removes truncation entirely, because the model's own
 template defaults thinking off and llama-server's `auto` turns it back on.
+
+Two live sessions have now been recorded end to end through the proxy, on
+gpt-oss-20b, on a fixture holding a real bug and a decoy report from another
+day. Both fixed the bug correctly, wrote a truthful report, left the decoy
+alone, and gave an account of themselves that the record supports: nothing
+claimed that did not happen, and the written paths exactly right. One omitted
+from its list of files read the report it had written and read back, which is
+an omission rather than an invention.
+
+So the failure that started all this did not reproduce, twice. That is not the
+same as it being fixed, and two sessions is not a sample. What exists now is
+the instrument, which is what was missing: a session can be run and its account
+checked against something that is not the model.

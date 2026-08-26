@@ -233,6 +233,32 @@ tool-round cap.
 comparable. Run both shapes for anything about tool use, and say which shape
 a number came from, because the number does not mean much without it.
 
+## A multi-turn task keeps every turn
+
+`--out` records `turnOutputs` for any task with more than one turn, not only
+the final answer. It kept the final answer alone until 26 Aug 2026, which made
+the one result nobody could explain the one nothing on disk could be used to
+explain: `self-report-edit` records "said 7 lines, its own output has 8" and
+the output it refers to had been discarded. Same argument as `toolLog`. A
+single-turn task omits the field, because `output` is already the whole record.
+
+That recovered the answer. Qwen3-Coder-30B writes the identical 8-line rewrite
+every time and says 7 every time, and it says 7 for that same function when
+handed it rather than having written it, so the task is not measuring
+self-report at all. It counts a 5-line and an 11-line function correctly,
+counts the same 8-line function correctly when told to number the lines first,
+and is right again once the function or its argument is renamed. Changing the
+condition or reordering the branches does not help. Surface text decides it and
+control flow does not, which is what answering from a remembered snippet looks
+like rather than counting the one in front of it. Three of four canonical
+exercises came back wrong by one or two, and their identifier-renamed twins
+were all correct.
+
+So `self-report-edit` is a weaker task than its name suggests: on a familiar
+function it scores recall, and only an unfamiliar one puts the self-report
+property under test. Anything drawn from a textbook exercise has the same
+problem.
+
 ## Reading a mixed run
 
 `summarise.js` splits results by task class, which the console summary does

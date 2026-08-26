@@ -19,6 +19,14 @@ bench/results/*.csv
 # decision was made on live only on one machine, which is where they die.
 !bench/results/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.json
 
+# Recorded live sessions, which a bench result is not, so the dated exception
+# above must not reach them. A proxy log holds the whole conversation: every
+# tool call, every file the tools handed back, and the absolute paths they came
+# from. The first one recorded here carried the path of a private working
+# directory in six of its lines. A session log stays on the machine that
+# recorded it, and the scored summary is what travels.
+bench/results/*.jsonl
+
 # Secrets and local overrides
 .env
 .env.*
