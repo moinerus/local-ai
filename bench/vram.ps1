@@ -30,6 +30,7 @@
 param(
     [switch] $Watch,
     [switch] $ByProcess,
+    [switch] $Json,
     [int]    $IntervalSeconds = 5,
     [string] $Label = ''
 )
@@ -89,7 +90,7 @@ function Group-ByName {
 }
 
 function Show-Sample {
-    param([string] $Tag)
+    param([string] $Tag, [switch] $Json)
 
     $rows = Get-GpuMemorySample
     if (-not $rows) { return }
@@ -97,28 +98,39 @@ function Show-Sample {
     $totalMb = ($rows | Measure-Object -Property MB -Sum).Sum
     $stamp   = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
 
-    Write-Host ''
-    Write-Host "$stamp  total dedicated: $totalMb MB ($([math]::Round($totalMb / 1024, 2)) GB)$Tag"
-
     # 16304 MiB, not the 16384 a "16 GB card" implies. Read from the card on
     # 26 Aug 2026 via llama.cpp's --list-devices, which asks Vulkan rather than
     # rounding the marketing figure. The old value made every headroom reading
     # 80 MiB optimistic.
-    $cardMb    = 16304
-    $headroom  = [math]::Round(($cardMb - $totalMb) / 1024, 2)
-    Write-Host "against a 16304 MiB card, headroom: $headroom GiB"
-
-    # These counters and Vulkan's own heap query disagree, and the gap is large
-    # enough to change a model decision. On 26 Aug the counters said 4237.5 MiB
-    # in use, so 12066 MiB free, while Vulkan reported 15416 MiB free. Windows
-    # WDDM lets the compositor's and the browsers' allocations be evicted to
-    # system RAM under pressure, so Vulkan reports what a new process could
-    # claim, and this reports what is currently resident. Neither is wrong.
     #
-    # Settled 26 Aug 2026 by loading a model. Qwen3.5-9B Q6_K took these
-    # counters from 4538.9 to 12409.2 MiB, a rise of 7870 MiB against a
-    # 7787.5 MiB llama-server allocation. The counters were measuring the
-    # right thing. Plan against this figure, not against Vulkan's.
+    # Declared once, above the branch. The -Json path arrived with its own
+    # copy, which is how a card size gets corrected in one mode and not the
+    # other.
+    $cardMb   = 16304
+    $headroom = [math]::Round(($cardMb - $totalMb) / 1024, 2)
+
+    if ($Json) {
+        $processRows = $rows | Where-Object { $_.MB -ge 1 } | Sort-Object MB -Descending | ForEach-Object {
+            [pscustomobject]@{
+                ProcessId = $_.ProcessId
+                Name      = $_.Name
+                MB        = $_.MB
+            }
+        }
+        [pscustomobject]@{
+            Timestamp        = $stamp
+            Label            = $Label
+            CardMB           = $cardMb
+            TotalDedicatedMB = $totalMb
+            HeadroomGib      = $headroom
+            ProcessRows      = $processRows
+        } | ConvertTo-Json -Depth 10
+        return
+    }
+
+    Write-Host ''
+    Write-Host "$stamp  total dedicated: $totalMb MB ($([math]::Round($totalMb / 1024, 2)) GB)$Tag"
+    Write-Host "against a $cardMb MiB card, headroom: $headroom GiB"
 
     if ($ByProcess) {
         $rows | Where-Object { $_.MB -ge 1 } | Format-Table -AutoSize
@@ -133,10 +145,10 @@ $tag = if ($Label) { "  [$Label]" } else { '' }
 if ($Watch) {
     Write-Host "Sampling every $IntervalSeconds s. Ctrl+C to stop."
     while ($true) {
-        Show-Sample -Tag $tag
+        Show-Sample -Tag $tag -Json:$Json
         Start-Sleep -Seconds $IntervalSeconds
     }
 }
 else {
-    Show-Sample -Tag $tag
+    Show-Sample -Tag $tag -Json:$Json
 }

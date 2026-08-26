@@ -14,6 +14,11 @@
 #
 # Exit 0 if both are up, 1 if either is down.
 
+[CmdletBinding()]
+param(
+    [switch] $Json
+)
+
 $services = @{
     'llama-server' = @{ port = 8080; status = $false }
     'whisper-server' = @{ port = 8756; status = $false }
@@ -32,18 +37,31 @@ $services.Values | ForEach-Object {
     }
 }
 
-# Print status for each service
-$services.Keys | ForEach-Object {
-    $svc = $_
-    $port = $services[$svc].port
-    $status = if ($services[$svc].status) { 'UP' } else { 'DOWN' }
-    Write-Host "$svc - $port - $status"
+# Computed once, above the branch, and used by the single exit at the bottom.
+# The -Json branch originally carried its own copy and inverted it: it wrote
+# `exit [int] $allUp` against a boolean, so both-servers-up exited 1 while the
+# human path exited 0. Two copies of one rule is what let the two modes
+# disagree, so there is now one copy and one exit.
+$allUp = ($services.Values | Where-Object { $_.status } | Measure-Object).Count -eq 2
+
+if ($Json) {
+    [pscustomobject]@{
+        Service = $services.Keys | ForEach-Object {
+            [pscustomobject]@{
+                Service = $_
+                Port    = $services[$_].port
+                Up      = $services[$_].status
+            }
+        }
+    } | ConvertTo-Json -Depth 2
+}
+else {
+    $services.Keys | ForEach-Object {
+        $port = $services[$_].port
+        $state = if ($services[$_].status) { 'UP' } else { 'DOWN' }
+        Write-Host "$_ - $port - $state"
+    }
 }
 
-# Exit 0 if both are up, 1 if either is down
-$allUp = $services.Values | Where-Object { $_.status } | Measure-Object | Select-Object -ExpandProperty Count
-if ($allUp -eq 2) {
-    exit 0
-} else {
-    exit 1
-}
+# Exit 0 if both are up, 1 if either is down. Both modes, one rule.
+if ($allUp) { exit 0 } else { exit 1 }
