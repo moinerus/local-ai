@@ -69,8 +69,17 @@ $ErrorActionPreference = 'Continue'
 $Exe   = 'C:\llama.cpp\llama-server.exe'
 $Model = "C:\models\Qwen3.5-9B-$Quant.gguf"
 
-if (-not (Test-Path $Exe))   { Write-Error "llama-server missing: $Exe";   exit 2 }
-if (-not (Test-Path $Model)) { Write-Error "model missing: $Model";        exit 2 }
+# Without this the model's own template raises "System message must be at the
+# beginning" for any system-role message after position 0. Claude Code sends
+# one, so every request returns a 500 that names a line in the built-in
+# template rather than anything about this script. The patched copy renders a
+# ChatML system turn there instead. Relative to this script, so the repo can
+# move.
+$Template = Join-Path $PSScriptRoot 'qwen3.5-chat-template.jinja'
+
+if (-not (Test-Path $Exe))      { Write-Error "llama-server missing: $Exe";       exit 2 }
+if (-not (Test-Path $Model))    { Write-Error "model missing: $Model";            exit 2 }
+if (-not (Test-Path $Template)) { Write-Error "chat template missing: $Template"; exit 2 }
 
 $listening = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
 if ($listening) { Write-Output "something is already listening on $Port"; exit 1 }
@@ -85,6 +94,7 @@ Write-Output "serving $Quant ($sizeGiB GiB on disk) at $ContextSize tokens, $Cac
     -c $ContextSize `
     -ctk $CacheType `
     -ctv $CacheType `
+    --chat-template-file $Template `
     --host 127.0.0.1 `
     --port $Port `
     --jinja

@@ -17,6 +17,17 @@
 #     cannot reach a Windows service at all.
 set -uo pipefail
 
+# claude lives in ~/.local/bin, which the login profile adds to PATH. A script
+# invoked as `bash claude-local.sh` gets neither a login nor an interactive
+# shell, so that entry is missing and the exec below dies with
+# "claude: not found" after printing a success line. Put it back explicitly.
+export PATH="${HOME}/.local/bin:${PATH}"
+
+if ! command -v claude >/dev/null 2>&1; then
+  echo "claude not on PATH, and not at ${HOME}/.local/bin/claude either" >&2
+  exit 2
+fi
+
 PORT="${LOCAL_LANE_PORT:-8080}"
 BASE="http://127.0.0.1:${PORT}"
 
