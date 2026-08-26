@@ -550,6 +550,12 @@ const formatStrict = {
 const helpers = { extractJson, extractCode, pass, fail, format, sameSet };
 const toolTasks = require('./tasks-tools.js')(helpers);
 
+// Renamed twins of the three executed tasks whose subjects are textbook
+// exercises. They are not part of the eight-task set and no headline score
+// includes them: they exist to be run against their originals with --only, to
+// find how much of an original score was recall. See tasks-twins.js.
+const twinTasks = require('./tasks-twins.js')(helpers);
+
 module.exports = [
   exitCodes,
   pyRetry,
@@ -560,6 +566,7 @@ module.exports = [
   selfReportUnknown,
   formatStrict,
   ...toolTasks,
+  ...twinTasks,
 ];
 
 module.exports.helpers = helpers;

@@ -24,18 +24,24 @@ const { spawnSync } = require('child_process');
 const BENCH = path.resolve(__dirname, '..');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'proverefusal-'));
 
-// Everything run-tasks.js requires, other than tasks.js which is rewritten
-// below. A module added to the harness and not added here does not make this
-// test pass for the wrong reason, it makes it die on a module resolution
-// error, which is how tasks-tools.js was caught.
-const COPIED = ['run-tasks.js', 'sandbox.js', 'tasks-tools.js'];
+// Everything the harness needs, other than tasks.js which is rewritten below.
+//
+// This roster used to be typed out here, and it stopped covering the harness
+// twice: once when tasks-tools.js was added and again when tasks-twins.js was.
+// Both times the suite died on a module resolution error rather than passing
+// for the wrong reason, which is the safe direction, and both times the
+// failure pointed at this file instead of at the change that caused it.
+// Derive it instead: every local sibling module the bench directory holds.
+const COPIED = fs
+  .readdirSync(BENCH)
+  .filter((f) => f.endsWith('.js') && f !== 'tasks.js')
+  .sort();
+if (!COPIED.includes('run-tasks.js')) {
+  console.error(`REFUSED: run-tasks.js is not in ${BENCH}, so there is no harness to test.`);
+  process.exit(2);
+}
 for (const f of COPIED) {
-  const src = path.join(BENCH, f);
-  if (!fs.existsSync(src)) {
-    console.error(`REFUSED: ${f} is not in ${BENCH}. Update COPIED in this file.`);
-    process.exit(2);
-  }
-  fs.copyFileSync(src, path.join(tmp, f));
+  fs.copyFileSync(path.join(BENCH, f), path.join(tmp, f));
 }
 
 // Anchored on the exact fixture string, and refuses rather than proceeding if

@@ -1,0 +1,547 @@
+{
+  "label": "gpt-oss-20b-twins",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "gpt-oss-20b-twins",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": [
+      "py-retry",
+      "py-version-sort",
+      "py-dedupe-stable",
+      "twin-retry",
+      "twin-version-sort",
+      "twin-dedupe"
+    ],
+    "exec": true,
+    "python": "python3",
+    "padding": "turn",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "bench/results/2026-08-26-twins-gptoss.json"
+  },
+  "at": "2026-08-26T21:44:59.755Z",
+  "results": [
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 197,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 1356,
+          "reasoningChars": 4928,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    import time\n    if sleep is None:\n        sleep_func = time.sleep\n    else:\n        sleep_func = sleep\n    last_exc = None\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if i < attempts - 1:\n                delay = base_delay * (2 ** i)\n                sleep_func(delay)\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 979,
+          "reasoningChars": 3827,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    import time\n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception:\n            if attempt == attempts:\n                raise\n            delay = base_delay * (2 ** (attempt - 1))\n            if sleep is None:\n                time.sleep(delay)\n            else:\n                sleep(delay)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 979,
+          "reasoningChars": 3827,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    import time\n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception:\n            if attempt == attempts:\n                raise\n            delay = base_delay * (2 ** (attempt - 1))\n            if sleep is None:\n                time.sleep(delay)\n            else:\n                sleep(delay)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 186,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 186,
+          "completionTokens": 2466,
+          "reasoningChars": 7644,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def key(v):\n        # Remove build metadata\n        core_part = v.split('+', 1)[0]\n        if '-' in core_part:\n            core, pre = core_part.split('-', 1)\n            pre_parts = pre.split('.')\n            pre_key = []\n            for p in pre_parts:\n                if p.isdigit():\n                    pre_key.append((0, int(p)))\n                else:\n                    pre_key.append((1, p))\n            pre_key = tuple(pre_key)\n            pre_flag = 0  # prerelease comes before release\n        else:\n            core = core_part\n            pre_key = ()\n            pre_flag = 1  # release\n        major, minor, patch = core.split('.')\n        return (int(major), int(minor), int(patch), pre_flag, pre_key)\n    return sorted(versions, key=key)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 186,
+          "completionTokens": 2481,
+          "reasoningChars": 9749,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def key(v):\n        main = v.split('+', 1)[0]\n        if '-' in main:\n            core, prerelease = main.split('-', 1)\n            prerelease_present = 0\n        else:\n            core = main\n            prerelease = ''\n            prerelease_present = 1\n        major, minor, patch = map(int, core.split('.'))\n        if prerelease:\n            prerelease_tuple = tuple(\n                (0, int(p)) if p.isdigit() else (1, p)\n                for p in prerelease.split('.')\n            )\n        else:\n            prerelease_tuple = ()\n        return (major, minor, patch, prerelease_present, prerelease_tuple)\n    return sorted(versions, key=key)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 186,
+          "completionTokens": 2481,
+          "reasoningChars": 9749,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def key(v):\n        main = v.split('+', 1)[0]\n        if '-' in main:\n            core, prerelease = main.split('-', 1)\n            prerelease_present = 0\n        else:\n            core = main\n            prerelease = ''\n            prerelease_present = 1\n        major, minor, patch = map(int, core.split('.'))\n        if prerelease:\n            prerelease_tuple = tuple(\n                (0, int(p)) if p.isdigit() else (1, p)\n                for p in prerelease.split('.')\n            )\n        else:\n            prerelease_tuple = ()\n        return (major, minor, patch, prerelease_present, prerelease_tuple)\n    return sorted(versions, key=key)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 139,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 588,
+          "reasoningChars": 2283,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 559,
+          "reasoningChars": 2243,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if not any(item == seen for seen in result):\n            result.append(item)\n    return result\n```\n"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 559,
+          "reasoningChars": 2243,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if not any(item == seen for seen in result):\n            result.append(item)\n    return result\n```\n"
+        }
+      ]
+    },
+    {
+      "task": "twin-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 203,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 203,
+          "completionTokens": 989,
+          "reasoningChars": 3665,
+          "finish": "stop",
+          "output": "```python\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    import time\n    for attempt in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as e:\n            if attempt == max_tries:\n                raise\n            delay = first_pause * (2 ** (attempt - 1))\n            if pause is None:\n                time.sleep(delay)\n            else:\n                pause(delay)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 203,
+          "completionTokens": 1023,
+          "reasoningChars": 3752,
+          "finish": "stop",
+          "output": "```python\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    import time\n    for attempt in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as e:\n            if attempt == max_tries:\n                raise\n            pause_time = first_pause * (2 ** (attempt - 1))\n            if pause is None:\n                time.sleep(pause_time)\n            else:\n                pause(pause_time)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 203,
+          "completionTokens": 1023,
+          "reasoningChars": 3752,
+          "finish": "stop",
+          "output": "```python\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    import time\n    for attempt in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as e:\n            if attempt == max_tries:\n                raise\n            pause_time = first_pause * (2 ** (attempt - 1))\n            if pause is None:\n                time.sleep(pause_time)\n            else:\n                pause(pause_time)\n```"
+        }
+      ]
+    },
+    {
+      "task": "twin-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 187,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 187,
+          "completionTokens": 1403,
+          "reasoningChars": 5246,
+          "finish": "stop",
+          "output": "```python\ndef order_releases(tags):\n    def parse_tag(tag):\n        # Remove build metadata\n        core_part = tag.split('+', 1)[0]\n        if '-' in core_part:\n            core, prerelease = core_part.split('-', 1)\n            prerelease_ids = prerelease.split('.')\n            prerelease_tuple = tuple(\n                (0, int(id_)) if id_.isdigit() else (1, id_)\n                for id_ in prerelease_ids\n            )\n            prerelease_flag = 0  # prerelease comes before release\n        else:\n            core = core_part\n            prerelease_tuple = ()\n            prerelease_flag = 1  # release comes after prerelease\n        major, minor, patch = (int(x) for x in core.split('.'))\n        return (major, minor, patch, prerelease_flag, prerelease_tuple)\n\n    return sorted(tags, key=parse_tag)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 187,
+          "completionTokens": 2163,
+          "reasoningChars": 7219,
+          "finish": "stop",
+          "output": "```python\ndef order_releases(tags):\n    def parse(tag):\n        t = tag.split('+', 1)[0]          # ignore build metadata\n        if t.startswith(('v', 'V')):\n            t = t[1:]                     # strip leading 'v' or 'V'\n        if '-' in t:\n            main, pre = t.split('-', 1)\n            prerelease_flag = 0\n        else:\n            main, pre = t, None\n            prerelease_flag = 1\n        parts = main.split('.')\n        major, minor, patch = map(int, (parts + ['0', '0', '0'])[:3])\n        if pre is None:\n            pre_tuple = ()\n        else:\n            pre_tuple = tuple(\n                (0, int(x)) if x.isdigit() else (1, x)\n                for x in pre.split('.')\n            )\n        return (major, minor, patch, prerelease_flag, pre_tuple)\n    return sorted(tags, key=parse)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 187,
+          "completionTokens": 2163,
+          "reasoningChars": 7219,
+          "finish": "stop",
+          "output": "```python\ndef order_releases(tags):\n    def parse(tag):\n        t = tag.split('+', 1)[0]          # ignore build metadata\n        if t.startswith(('v', 'V')):\n            t = t[1:]                     # strip leading 'v' or 'V'\n        if '-' in t:\n            main, pre = t.split('-', 1)\n            prerelease_flag = 0\n        else:\n            main, pre = t, None\n            prerelease_flag = 1\n        parts = main.split('.')\n        major, minor, patch = map(int, (parts + ['0', '0', '0'])[:3])\n        if pre is None:\n            pre_tuple = ()\n        else:\n            pre_tuple = tuple(\n                (0, int(x)) if x.isdigit() else (1, x)\n                for x in pre.split('.')\n            )\n        return (major, minor, patch, prerelease_flag, pre_tuple)\n    return sorted(tags, key=parse)\n```"
+        }
+      ]
+    },
+    {
+      "task": "twin-dedupe",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 150,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 150,
+          "completionTokens": 472,
+          "reasoningChars": 1812,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for e in entries:\n        if not any(e == s for s in seen):\n            seen.append(e)\n            result.append(e)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 150,
+          "completionTokens": 502,
+          "reasoningChars": 1943,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for e in entries:\n        if not any(e == s for s in seen):\n            seen.append(e)\n            result.append(e)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 150,
+          "completionTokens": 502,
+          "reasoningChars": 1943,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for e in entries:\n        if not any(e == s for s in seen):\n            seen.append(e)\n            result.append(e)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18907,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 460,
+          "reasoningChars": 1522,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            if n == attempts:\n                raise\n            delay = base_delay * (2 ** (n - 1))\n            if sleep is None:\n                time.sleep(delay)\n            else:\n                sleep(delay)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 417,
+          "reasoningChars": 1338,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exc = None\n    sleep_func = sleep or time.sleep\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep_func(delay)\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 417,
+          "reasoningChars": 1338,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exc = None\n    sleep_func = sleep or time.sleep\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep_func(delay)\n    raise last_exc\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18896,
+      "tally": {
+        "pass": 2,
+        "fail": 0,
+        "format": 0,
+        "truncated": 1,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8937 chars of reasoning, 677 chars of answer",
+          "promptTokens": 18896,
+          "completionTokens": 2500,
+          "reasoningChars": 8937,
+          "finish": "length",
+          "output": "```python\ndef sort_versions(versions):\n    def parse(v):\n        v_no_build = v.split('+', 1)[0]\n        if '-' in v_no_build:\n            core, prerelease = v_no_build.split('-', 1)\n        else:\n            core = v_no_build\n            prerelease = None\n        major, minor, patch = map(int, core.split('.'))\n        if prerelease is None:\n            has_prerelease = 1\n            prerelease_tuple = ()\n        else:\n            has_prerelease = 0\n            parts = prerelease.split('.')\n            prerelease_tuple = tuple(\n                (0, int(p)) if p.isdigit() else (1, p)\n                for p in parts\n            )\n        return (major, minor, patch, has_pr"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18896,
+          "completionTokens": 1615,
+          "reasoningChars": 5601,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse(v):\n        v_no_build = v.split('+', 1)[0]\n        if '-' in v_no_build:\n            core, prerelease = v_no_build.split('-', 1)\n        else:\n            core, prerelease = v_no_build, None\n        major, minor, patch = map(int, core.split('.'))\n        if prerelease is not None:\n            parts = prerelease.split('.')\n            prerelease_tuple = []\n            for p in parts:\n                if p.isdigit():\n                    prerelease_tuple.append((0, int(p)))\n                else:\n                    prerelease_tuple.append((1, p))\n            prerelease_tuple = tuple(prerelease_tuple)\n        else:\n            prerelease_tuple = None\n        return major, minor, patch, prerelease_tuple\n\n    def key(v):\n        major, minor, patch, prerelease_tuple = parse(v)\n        prerelease_key = (1,) if prerelease_tuple is None else (0, prerelease_tuple)\n        return (major, minor, patch, prerelease_key)\n\n    return sorted(versions, key=key)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18896,
+          "completionTokens": 1615,
+          "reasoningChars": 5601,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse(v):\n        v_no_build = v.split('+', 1)[0]\n        if '-' in v_no_build:\n            core, prerelease = v_no_build.split('-', 1)\n        else:\n            core, prerelease = v_no_build, None\n        major, minor, patch = map(int, core.split('.'))\n        if prerelease is not None:\n            parts = prerelease.split('.')\n            prerelease_tuple = []\n            for p in parts:\n                if p.isdigit():\n                    prerelease_tuple.append((0, int(p)))\n                else:\n                    prerelease_tuple.append((1, p))\n            prerelease_tuple = tuple(prerelease_tuple)\n        else:\n            prerelease_tuple = None\n        return major, minor, patch, prerelease_tuple\n\n    def key(v):\n        major, minor, patch, prerelease_tuple = parse(v)\n        prerelease_key = (1,) if prerelease_tuple is None else (0, prerelease_tuple)\n        return (major, minor, patch, prerelease_key)\n\n    return sorted(versions, key=key)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18849,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 269,
+          "reasoningChars": 924,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 300,
+          "reasoningChars": 1044,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```\n"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 300,
+          "reasoningChars": 1044,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```\n"
+        }
+      ]
+    },
+    {
+      "task": "twin-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18913,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18913,
+          "completionTokens": 355,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    last_exc = None\n    for n in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as exc:\n            last_exc = exc\n            if n < max_tries:\n                delay = first_pause * (2 ** (n - 1))\n                if pause is None:\n                    time.sleep(delay)\n                else:\n                    pause(delay)\n    # All attempts failed\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18913,
+          "completionTokens": 355,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    last_exc = None\n    for n in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as exc:\n            last_exc = exc\n            if n < max_tries:\n                delay = first_pause * (2 ** (n - 1))\n                if pause is None:\n                    time.sleep(delay)\n                else:\n                    pause(delay)\n    # All attempts failed\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18913,
+          "completionTokens": 355,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef attempt_with_backoff(action, max_tries, first_pause, pause=None):\n    last_exc = None\n    for n in range(1, max_tries + 1):\n        try:\n            return action()\n        except Exception as exc:\n            last_exc = exc\n            if n < max_tries:\n                delay = first_pause * (2 ** (n - 1))\n                if pause is None:\n                    time.sleep(delay)\n                else:\n                    pause(delay)\n    # All attempts failed\n    raise last_exc\n```"
+        }
+      ]
+    },
+    {
+      "task": "twin-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18897,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18897,
+          "completionTokens": 779,
+          "reasoningChars": 2354,
+          "finish": "stop",
+          "output": "```python\ndef order_releases(tags):\n    def parse_tag(tag):\n        # Strip leading 'v' if present\n        if tag.startswith('v'):\n            tag = tag[1:]\n        if '-' in tag:\n            core, prerelease = tag.split('-', 1)\n            prerelease_flag = 0  # prerelease sorts before release\n        else:\n            core = tag\n            prerelease = ''\n            prerelease_flag = 1  # release\n        major, minor, patch = map(int, core.split('.'))\n        prerelease_parts = []\n        if prerelease:\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append((0, int(part)))  # numeric parts first\n                else:\n                    prerelease_parts.append((1, part))\n        return (major, minor, patch, prerelease_flag, tuple(prerelease_parts))\n\n    return sorted(tags, key=parse_tag)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18897,
+          "completionTokens": 1422,
+          "reasoningChars": 5635,
+          "finish": "stop",
+          "output": "```python\nimport re\n\ndef order_releases(tags):\n    def parse_tag(tag):\n        # Remove build metadata\n        tag = tag.split('+', 1)[0]\n        if '-' in tag:\n            core, pre = tag.split('-', 1)\n            pre_ids = pre.split('.')\n        else:\n            core = tag\n            pre_ids = []\n        major, minor, patch = map(int, core.split('.'))\n        if pre_ids:\n            pre_tuple = tuple(\n                (0, int(id)) if id.isdigit() else (1, id)\n                for id in pre_ids\n            )\n            is_release = 0\n        else:\n            pre_tuple = ()\n            is_release = 1\n        return (major, minor, patch, is_release, pre_tuple)\n\n    return sorted(tags, key=parse_tag)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18897,
+          "completionTokens": 2278,
+          "reasoningChars": 8251,
+          "finish": "stop",
+          "output": "```python\ndef order_releases(tags):\n    def parse(tag):\n        # ignore build metadata\n        if '+' in tag:\n            tag = tag.split('+', 1)[0]\n        # split prerelease\n        if '-' in tag:\n            main, pre = tag.split('-', 1)\n            prerelease_flag = 0\n        else:\n            main = tag\n            pre = None\n            prerelease_flag = 1\n        major, minor, patch = map(int, main.split('.'))\n        if pre is None:\n            pre_tuple = ()\n        else:\n            pre_tuple = tuple(\n                (0, int(id)) if id.isdigit() else (1, id)\n                for id in pre.split('.')\n            )\n        return (major, minor, patch, prerelease_flag, pre_tuple)\n    return sorted(tags, key=parse)\n```"
+        }
+      ]
+    },
+    {
+      "task": "twin-dedupe",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18860,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18860,
+          "completionTokens": 484,
+          "reasoningChars": 1908,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for entry in entries:\n        if not any(entry == s for s in seen):\n            seen.append(entry)\n            result.append(entry)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18860,
+          "completionTokens": 446,
+          "reasoningChars": 1659,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for e in entries:\n        if not any(e == s for s in seen):\n            seen.append(e)\n            result.append(e)\n    return result\n```\n"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18860,
+          "completionTokens": 446,
+          "reasoningChars": 1659,
+          "finish": "stop",
+          "output": "```python\ndef first_occurrences(entries):\n    seen = []\n    result = []\n    for e in entries:\n        if not any(e == s for s in seen):\n            seen.append(e)\n            result.append(e)\n    return result\n```\n"
+        }
+      ]
+    }
+  ]
+}
