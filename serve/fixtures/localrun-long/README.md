@@ -13,7 +13,13 @@ of them.
   reading material the session does not need to change.
 - `data/pipeline.log` is 4,000 generated lines. Every line whose number is a
   multiple of 97 is an ERROR line, so the true count is 41 and a scorer can
-  derive it without trusting anyone.
+  derive it without trusting anyone. It is also 259.5 KB, which is over Claude
+  Code's 256 KB read cap, so a session has to reach for a different tool. That
+  was not designed in and it turned out to be the most interesting part of the
+  first run.
+- `make-pipeline-log.ps1` regenerates that log. Re-running it must reproduce
+  the committed file byte for byte, or the generator and the fixture have
+  drifted and the 41 stops being derivable.
 - `notes/` holds one report from an earlier day. It is real, valid, and about
   different work.
 - `.claude/skills/change-report/` is the skill the task requires for the report

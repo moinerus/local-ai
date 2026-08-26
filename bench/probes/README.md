@@ -30,7 +30,28 @@ Run in order, each answering what the last one ruled out:
 ./bench/node22.sh bench/probes/inspect-selfreport.js bench/results/<file>.json
 ```
 
-Two things in here are worth copying and one is worth avoiding.
+## The live-session probes
+
+Two scripts that read a recorder log directly, kept because the figures they
+produced went into a write-up and nothing else on disk could reproduce them.
+
+| Script | Question | Answer, for the 26 Aug long session |
+| --- | --- | --- |
+| `session-depth.js` | How deep did it get, and did the history ever shrink? | 175,450 bytes peak, about 43,900 tokens, 41 messages. History fell 8 times, all of them subagents opening their own conversation on the same connection rather than compaction |
+| `inspect-failed-calls.js` | What did the failed calls actually return? | Every `Read` of the 4,000-line log refused it at 259.5 KB against a 256 KB cap, which is why the model grepped instead |
+
+```bash
+./bench/node22.sh bench/probes/session-depth.js <log.jsonl>
+./bench/node22.sh bench/probes/inspect-failed-calls.js <log.jsonl>
+```
+
+`session-depth.js` reads a drop in the message count as a possible compaction
+and says so. On this harness it is usually a subagent, so read the sequence
+numbers against the tool calls before concluding anything. Counting a subagent's
+first turn as compaction would be the same mistake, one level along, as the
+scorer counting a readiness probe as a conversation turn.
+
+Two things in the line-count probes are worth copying and one is worth avoiding.
 
 Every probe from 3 onwards re-runs the untouched original as a positive control
 in the same pass and reports its verdict first, because a probe whose trigger

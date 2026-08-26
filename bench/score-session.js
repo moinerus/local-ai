@@ -55,7 +55,15 @@ try {
 // A log with no turns in it says nothing about the session. Reporting "no
 // discrepancies" off an empty record is the failure this whole exercise is
 // about, so it exits 2 rather than 0.
-const turns = entries.filter((e) => e.status === 200);
+//
+// A turn is a completion request, not any successful response. This counted
+// every status 200 the proxy saw, so the readiness probes against /v1/models
+// that start and end a run were counted as conversation turns. The figure was
+// quoted in a write-up as the session's depth and was four too high: 31 where
+// the model was asked 27 times. Anything that inflates a published count
+// silently is worse than a crash, because the number still looks derived.
+const COMPLETION_PATHS = /\/(messages|chat\/completions|completions)\b/;
+const turns = entries.filter((e) => e.status === 200 && COMPLETION_PATHS.test(String(e.path)));
 if (turns.length === 0) {
   console.error(`${logPath} holds ${entries.length} entr(ies) and none of them is a completed turn.`);
   console.error('Nothing can be concluded about the session from this.');

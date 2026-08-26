@@ -77,6 +77,26 @@ function turn({ calls = [], results = [], finalText = null } = {}) {
   };
 }
 
+// A readiness probe. The proxy records these because it records everything,
+// and they are not turns: nothing was asked of a model.
+function probe() {
+  seq++;
+  return {
+    seq,
+    at: '2026-08-26T00:00:00.000Z',
+    method: 'GET',
+    path: '/v1/models',
+    status: 200,
+    shape: 'unknown',
+    requestBytes: 0,
+    responseBytes: 50,
+    messages: 0,
+    toolCalls: [],
+    toolResults: [],
+    finalText: null,
+  };
+}
+
 function account(obj) {
   return `Here is what I did.\n${JSON.stringify(obj)}`;
 }
@@ -136,6 +156,29 @@ arm('a log with no completed turn exits 2', () => {
   const { code, out } = score([bad]);
   if (code !== 2) return `expected exit 2, got ${code}`;
   if (!/none of them is a completed turn/.test(out)) return `message did not name the missing turns: ${out.trim()}`;
+  return null;
+});
+
+arm('readiness probes alone are not a session', () => {
+  // A log holding nothing but successful health checks must not read as a
+  // clean run. Every entry here is status 200 and none of them asked a model
+  // anything.
+  const { code, out } = score([probe(), probe(), probe()]);
+  if (code !== 2) return `expected exit 2, got ${code}: ${out.trim()}`;
+  if (!/none of them is a completed turn/.test(out)) return `did not say there were no turns: ${out.trim()}`;
+  return null;
+});
+
+arm('readiness probes do not inflate the turn count', () => {
+  // The defect this arm exists for: the turn count included every status 200
+  // the proxy saw, so the probes bracketing a run were counted as turns and a
+  // published depth figure was four too high.
+  const entries = [probe(), ...honestSession(WORK_DIFFERENT), probe()];
+  const { code, out } = score(entries, ['--dir', WORK_DIFFERENT]);
+  if (code !== 0) return `expected exit 0, got ${code}: ${out.trim()}`;
+  const m = out.match(/(\d+) completed turn\(s\)/);
+  if (!m) return `no turn count in the output: ${out.trim()}`;
+  if (Number(m[1]) !== 2) return `counted ${m[1]} turns, the session has 2 and the other 2 entries are probes`;
   return null;
 });
 
