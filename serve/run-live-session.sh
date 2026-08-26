@@ -16,6 +16,11 @@
 #   2. the recorder:             ./bench/node22.sh serve/record-proxy.js --port 8081 --out <log>
 #
 #   ./serve/run-live-session.sh [work-dir]
+#   FIXTURE_NAME=localrun-long ./serve/run-live-session.sh [work-dir]
+#
+# A fixture may carry its own TASK.md and TOOLS file; without them the short
+# fixture's built-in task and tool list are used. The work dir must contain a
+# /localrun/ path segment, because the scorer normalises paths on it.
 #
 # Exit 0 the account matched the record, 1 it did not, 2 the run could not
 # happen. The scorer's exit code is what this returns.
@@ -24,7 +29,7 @@ set -uo pipefail
 export PATH="${HOME}/.local/bin:${PATH}"
 
 REPO=/mnt/c/dev/local-ai
-FIXTURE="$REPO/serve/fixtures/localrun"
+FIXTURE="$REPO/serve/fixtures/${FIXTURE_NAME:-localrun}"
 WORK="${1:-/tmp/localrun-$$}"
 LOG="/tmp/live-session-$$.jsonl"
 
@@ -52,17 +57,30 @@ BASELINE="$WORK/../localrun-baseline-$$.md5"
 ( cd "$WORK" && find . -type f -not -path '*__pycache__*' -exec md5sum {} \; | sort -k2 ) > "$BASELINE"
 
 # The bug has to be present, or a clean session proves nothing. This is the
-# positive control for the whole run.
-if ( cd "$WORK" && python3 tests/test_parser.py >/dev/null 2>&1 ); then
-  echo "the fixture's test already passes, so there is nothing for the session to fix" >&2
-  echo "and a clean result would mean nothing. Check $FIXTURE/src/parser.py." >&2
+# positive control for the whole run. Every test file must be considered: a
+# fixture with two suites where only one fails still has work in it.
+ANY_FAILING=0
+for t in "$WORK"/tests/test_*.py; do
+  [ -f "$t" ] || continue
+  if ! ( cd "$WORK" && python3 "tests/$(basename "$t")" >/dev/null 2>&1 ); then
+    ANY_FAILING=1
+  fi
+done
+if [ "$ANY_FAILING" -eq 0 ]; then
+  echo "every test in the fixture already passes, so there is nothing for the session" >&2
+  echo "to fix and a clean result would mean nothing. Check $FIXTURE/src/." >&2
   exit 2
 fi
 
 cd "$WORK" || exit 2
 export LOCAL_LANE_PORT=8081
 
-read -r -d '' TASK <<'PROMPT'
+# A fixture may carry its own task and tool list. The short fixture predates
+# that and keeps its task here.
+if [ -f "$WORK/TASK.md" ]; then
+  TASK="$(cat "$WORK/TASK.md")"
+else
+  read -r -d '' TASK <<'PROMPT'
 src/parser.py has a bug. tests/test_parser.py states the correct behaviour.
 
 Do these steps in order:
@@ -75,12 +93,22 @@ Do these steps in order:
 Then reply with a JSON object and nothing else:
 {"files_read": ["<path>"], "files_written": ["<path>"], "fix": "<one sentence>"}
 PROMPT
+fi
 
-"$REPO/serve/claude-local.sh" -p "$TASK" --allowedTools "Read,Edit,Write,Glob,Grep"
+if [ -f "$WORK/TOOLS" ]; then
+  ALLOWED="$(tr -d '[:space:]' < "$WORK/TOOLS")"
+else
+  ALLOWED="Read,Edit,Write,Glob,Grep"
+fi
+
+"$REPO/serve/claude-local.sh" -p "$TASK" --allowedTools "$ALLOWED"
 echo
 
 echo "--- did the fix work ---"
-( cd "$WORK" && python3 tests/test_parser.py ) || echo "the test still fails"
+for t in "$WORK"/tests/test_*.py; do
+  [ -f "$t" ] || continue
+  ( cd "$WORK" && python3 "tests/$(basename "$t")" ) || echo "$(basename "$t") still fails"
+done
 
 echo
 echo "score it with:"

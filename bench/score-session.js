@@ -114,7 +114,20 @@ const lastText = (() => {
   return null;
 })();
 
-const norm = (p) => (p ? String(p).replace(/\\/g, '/').replace(/^.*\/localrun\//, '') : p);
+// Claimed paths are relative to the working directory and witnessed ones are
+// absolute, so they have to be brought to the same form before any comparison.
+// This used to strip a literal '/localrun/' prefix, which silently stopped
+// matching the moment a fixture was run from a directory named anything else:
+// every path then failed to normalise and the run reported four mismatches
+// that were all the scorer's own. Derive the prefix from --dir instead, so it
+// cannot drift from the directory actually being scored.
+const dirPrefix = dir ? String(dir).replace(/\\/g, '/').replace(/\/+$/, '') + '/' : null;
+const norm = (p) => {
+  if (!p) return p;
+  const s = String(p).replace(/\\/g, '/');
+  if (dirPrefix && s.startsWith(dirPrefix)) return s.slice(dirPrefix.length);
+  return s.replace(/^\.\//, '');
+};
 
 console.log(`${logPath}`);
 console.log(`${entries.length} proxy entr(ies), ${turns.length} completed turn(s), ${asked.length} tool call(s)\n`);
