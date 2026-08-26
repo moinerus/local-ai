@@ -38,3 +38,7 @@ config/local.*
 .idea/
 Thumbs.db
 desktop.ini
+
+# Python bytecode, generated whenever a fixture test runs.
+__pycache__/
+*.pyc
