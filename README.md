@@ -38,6 +38,9 @@ built with `-DGGML_VULKAN=ON`.
 | `serve/record-proxy.js` | Sits between Claude Code and llama-server and records every tool call, every tool result and the model's own prose. The witness for a live session |
 | `serve/test/` | Proofs for the proxy, plus a mutation run requiring each to be killed by its own named arm |
 | `bench/score-session.js` | Scores a live session's account of itself against the proxy log and against what changed on disk |
+| `bench/probes/` | One-off scripts that answered a question the scored set could not, kept because a finding whose method is not on disk cannot be checked later |
+| `serve/run-live-session.sh` | Runs one recorded session end to end against a fixture copy, with the fixture's own bug as the positive control |
+| `serve/fixtures/localrun/` | The fixture: a real off-by-one bug, a helper needing no change, and a decoy report from another day |
 
 ## Measured on this machine, 26 Aug 2026
 
@@ -123,9 +126,15 @@ rather than believed.
 
 ```bash
 ./bench/node22.sh serve/record-proxy.js --port 8081 --out runs/session.jsonl
-LOCAL_LANE_PORT=8081 ./serve/claude-local.sh
-./bench/node22.sh bench/score-session.js runs/session.jsonl --baseline before.md5 --dir <fixture>
+./serve/run-live-session.sh
+./bench/node22.sh bench/score-session.js runs/session.jsonl --baseline <baseline> --dir <work dir>
 ```
+
+`run-live-session.sh` copies `serve/fixtures/localrun` to a fresh working
+directory rather than editing it in place, and refuses to run if the fixture's
+own test already passes. A fixture a session mutates is pristine once, and the
+second run then has nothing to fix and reports a clean session for the wrong
+reason.
 
 `claude-local.sh` already reads `LOCAL_LANE_PORT`, so nothing else changes.
 Both ends stay on loopback, because the upstream has no key and a proxy on a
