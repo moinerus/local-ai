@@ -1,0 +1,711 @@
+{
+  "label": "gpt-oss-20b",
+  "url": "http://127.0.0.1:8081",
+  "opts": {
+    "url": "http://127.0.0.1:8081",
+    "model": "local",
+    "label": "gpt-oss-20b",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": null,
+    "exec": true,
+    "python": "python3",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "/tmp/gptoss-tasks.json"
+  },
+  "at": "2026-08-26T14:21:40.951Z",
+  "results": [
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 213,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 213,
+          "completionTokens": 105,
+          "reasoningChars": 256,
+          "finish": "stop",
+          "output": "[2,4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 213,
+          "completionTokens": 105,
+          "reasoningChars": 256,
+          "finish": "stop",
+          "output": "[2,4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 213,
+          "completionTokens": 105,
+          "reasoningChars": 256,
+          "finish": "stop",
+          "output": "[2,4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 197,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 987,
+          "reasoningChars": 3577,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        import time\n        sleep_func = time.sleep\n    else:\n        sleep_func = sleep\n    for i in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            if i == attempts:\n                raise\n            delay = base_delay * (2 ** (i - 1))\n            sleep_func(delay)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 1008,
+          "reasoningChars": 3616,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        import time\n        sleep_func = time.sleep\n    else:\n        sleep_func = sleep\n    last_exc = None\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if i < attempts - 1:\n                delay = base_delay * (2 ** i)\n                sleep_func(delay)\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 197,
+          "completionTokens": 1008,
+          "reasoningChars": 3616,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        import time\n        sleep_func = time.sleep\n    else:\n        sleep_func = sleep\n    last_exc = None\n    for i in range(attempts):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if i < attempts - 1:\n                delay = base_delay * (2 ** i)\n                sleep_func(delay)\n    raise last_exc\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 186,
+      "tally": {
+        "pass": 0,
+        "fail": 2,
+        "format": 0,
+        "truncated": 1,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 10085 chars of reasoning, 0 chars of answer",
+          "promptTokens": 186,
+          "completionTokens": 2500,
+          "reasoningChars": 10085,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-102395-2buwbo8pdb3.py\", line 13, in key /     major, minor, patch = map(int, core.split('.')) / UnboundLocalError: local variable 'core' referenced before assignment",
+          "promptTokens": 186,
+          "completionTokens": 1714,
+          "reasoningChars": 6693,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def key(v):\n        core_and_prerelease = v.split('+', 1)[0]\n        if '-' in core_and_prerelease:\n            core, prerelease = core_and_prerelease.split('-', 1)\n            prerelease_ids = prerelease.split('.')\n            prerelease_tuple = tuple(\n                (0, int(id)) if id.isdigit() else (1, id) for id in prerelease_ids\n            )\n            prerelease_key = (0, prerelease_tuple)\n        else:\n            prerelease_key = (1,)\n        major, minor, patch = map(int, core.split('.'))\n        return (major, minor, patch, prerelease_key)\n    return sorted(versions, key=key)\n```"
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-102395-qncxqqtwgc.py\", line 13, in key /     major, minor, patch = map(int, core.split('.')) / UnboundLocalError: local variable 'core' referenced before assignment",
+          "promptTokens": 186,
+          "completionTokens": 1714,
+          "reasoningChars": 6693,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def key(v):\n        core_and_prerelease = v.split('+', 1)[0]\n        if '-' in core_and_prerelease:\n            core, prerelease = core_and_prerelease.split('-', 1)\n            prerelease_ids = prerelease.split('.')\n            prerelease_tuple = tuple(\n                (0, int(id)) if id.isdigit() else (1, id) for id in prerelease_ids\n            )\n            prerelease_key = (0, prerelease_tuple)\n        else:\n            prerelease_key = (1,)\n        major, minor, patch = map(int, core.split('.'))\n        return (major, minor, patch, prerelease_key)\n    return sorted(versions, key=key)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 139,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 666,
+          "reasoningChars": 2659,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```\n"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 1035,
+          "reasoningChars": 4452,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if not any(item == existing for existing in result):\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 139,
+          "completionTokens": 855,
+          "reasoningChars": 3384,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if not any(item == existing for existing in result):\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 243,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 243,
+          "completionTokens": 315,
+          "reasoningChars": 1228,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 243,
+          "completionTokens": 464,
+          "reasoningChars": 1855,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 243,
+          "completionTokens": 464,
+          "reasoningChars": 1855,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 303,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 303,
+          "completionTokens": 195,
+          "reasoningChars": 504,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 303,
+          "completionTokens": 193,
+          "reasoningChars": 506,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 303,
+          "completionTokens": 193,
+          "reasoningChars": 506,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 140,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 140,
+          "completionTokens": 172,
+          "reasoningChars": 601,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 140,
+          "completionTokens": 172,
+          "reasoningChars": 601,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 140,
+          "completionTokens": 172,
+          "reasoningChars": 601,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 0,
+      "achievedPromptTokens": 120,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 120,
+          "completionTokens": 410,
+          "reasoningChars": 1492,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 120,
+          "completionTokens": 733,
+          "reasoningChars": 2867,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 120,
+          "completionTokens": 733,
+          "reasoningChars": 2867,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    },
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 18923,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 18923,
+          "completionTokens": 100,
+          "reasoningChars": 234,
+          "finish": "stop",
+          "output": "[2,4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 18923,
+          "completionTokens": 100,
+          "reasoningChars": 234,
+          "finish": "stop",
+          "output": "[2,4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 18923,
+          "completionTokens": 100,
+          "reasoningChars": 234,
+          "finish": "stop",
+          "output": "[2,4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18907,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 471,
+          "reasoningChars": 1567,
+          "finish": "stop",
+          "output": "```python\ndef retry(fn, attempts, base_delay, sleep=None):\n    import time\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            if n == attempts:\n                raise\n            delay = base_delay * (2 ** (n - 1))\n            if sleep is None:\n                time.sleep(delay)\n            else:\n                sleep(delay)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 414,
+          "reasoningChars": 1322,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exc = None\n    sleep_func = sleep or time.sleep\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep_func(delay)\n    raise last_exc\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18907,
+          "completionTokens": 414,
+          "reasoningChars": 1322,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exc = None\n    sleep_func = sleep or time.sleep\n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exc = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep_func(delay)\n    raise last_exc\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18896,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18896,
+          "completionTokens": 1150,
+          "reasoningChars": 4042,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse(v):\n        # ignore build metadata\n        v = v.split('+', 1)[0]\n        if '-' in v:\n            main, pre = v.split('-', 1)\n            pre_ids = pre.split('.')\n            pre_tuple = []\n            for pid in pre_ids:\n                if pid.isdigit():\n                    pre_tuple.append((0, int(pid)))\n                else:\n                    pre_tuple.append((1, pid))\n            pre_tuple = tuple(pre_tuple)\n            prerelease_flag = 0  # prerelease comes before release\n        else:\n            main = v\n            pre_tuple = ()\n            prerelease_flag = 1  # release comes after prerelease\n        major, minor, patch = map(int, main.split('.'))\n        return (major, minor, patch, prerelease_flag, pre_tuple)\n    return sorted(versions, key=parse)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18896,
+          "completionTokens": 1292,
+          "reasoningChars": 4965,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        # Remove build metadata\n        core, _, _ = v.partition('+')\n        # Separate prerelease\n        core_part, sep, prerelease_part = core.partition('-')\n        major, minor, patch = map(int, core_part.split('.'))\n        if sep:  # has prerelease\n            prerelease = []\n            for ident in prerelease_part.split('.'):\n                if ident.isdigit():\n                    prerelease.append((0, int(ident)))  # numeric identifiers first\n                else:\n                    prerelease.append((1, ident))  # alphanumeric identifiers\n            prerelease_flag = 0  # prerelease comes before normal\n        else:\n            prerelease = ()\n            prerelease_flag = 1  # normal release comes after prerelease\n        return (major, minor, patch, prerelease_flag, tuple(prerelease))\n\n    return sorted(versions, key=parse_version)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18896,
+          "completionTokens": 1292,
+          "reasoningChars": 4965,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        # Remove build metadata\n        core, _, _ = v.partition('+')\n        # Separate prerelease\n        core_part, sep, prerelease_part = core.partition('-')\n        major, minor, patch = map(int, core_part.split('.'))\n        if sep:  # has prerelease\n            prerelease = []\n            for ident in prerelease_part.split('.'):\n                if ident.isdigit():\n                    prerelease.append((0, int(ident)))  # numeric identifiers first\n                else:\n                    prerelease.append((1, ident))  # alphanumeric identifiers\n            prerelease_flag = 0  # prerelease comes before normal\n        else:\n            prerelease = ()\n            prerelease_flag = 1  # normal release comes after prerelease\n        return (major, minor, patch, prerelease_flag, tuple(prerelease))\n\n    return sorted(versions, key=parse_version)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 18849,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 284,
+          "reasoningChars": 1036,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 284,
+          "reasoningChars": 980,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 18849,
+          "completionTokens": 284,
+          "reasoningChars": 980,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if not any(item == s for s in seen):\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 18953,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 18953,
+          "completionTokens": 271,
+          "reasoningChars": 1058,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 18953,
+          "completionTokens": 271,
+          "reasoningChars": 1058,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 18953,
+          "completionTokens": 271,
+          "reasoningChars": 1058,
+          "finish": "stop",
+          "output": "{\"action\":\"remove\",\"subject\":\"cache\",\"removes_behaviour\":true}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19013,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19013,
+          "completionTokens": 198,
+          "reasoningChars": 520,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19013,
+          "completionTokens": 198,
+          "reasoningChars": 520,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19013,
+          "completionTokens": 198,
+          "reasoningChars": 520,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 18850,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 18850,
+          "completionTokens": 163,
+          "reasoningChars": 600,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 18850,
+          "completionTokens": 162,
+          "reasoningChars": 598,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 18850,
+          "completionTokens": 162,
+          "reasoningChars": 598,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 25000,
+      "achievedPromptTokens": 18830,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 18830,
+          "completionTokens": 183,
+          "reasoningChars": 685,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 18830,
+          "completionTokens": 183,
+          "reasoningChars": 685,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 18830,
+          "completionTokens": 183,
+          "reasoningChars": 685,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,11 @@ logs/
 bench/results/*.json
 bench/results/*.csv
 
+# A dated file is a baseline and is kept. Everything else in results/ is
+# scratch from a run someone was iterating on. Without this the numbers a
+# decision was made on live only on one machine, which is where they die.
+!bench/results/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.json
+
 # Secrets and local overrides
 .env
 .env.*

@@ -31,22 +31,37 @@ fi
 PORT="${LOCAL_LANE_PORT:-8080}"
 BASE="http://127.0.0.1:${PORT}"
 
-if ! curl -sf "${BASE}/v1/models" >/dev/null 2>&1; then
+MODELS_JSON="$(curl -sf "${BASE}/v1/models" 2>/dev/null || true)"
+if [ -z "$MODELS_JSON" ]; then
   echo "nothing answering at ${BASE}/v1/models" >&2
-  echo "start it on Windows with: C:\\dev\\local-ai\\serve\\qwen.ps1" >&2
-  echo "if that is already running, check .wslconfig has networkingMode=mirrored" >&2
+  echo "start one of these on Windows:" >&2
+  echo "  C:\\dev\\local-ai\\serve\\gptoss.ps1   gpt-oss-20b, the faster model" >&2
+  echo "  C:\\dev\\local-ai\\serve\\qwen.ps1     Qwen3.5-9B Q6_K" >&2
+  echo "if one is already running, check .wslconfig has networkingMode=mirrored" >&2
   exit 2
 fi
 
+# Read the served model off the server rather than printing a name typed here.
+# Two launch scripts share this port, so a hardcoded name is right half the
+# time and reads as authoritative both times. llama.cpp reports the model's
+# full path as its id, so take the basename and drop the extension.
+SERVED="$(printf '%s' "$MODELS_JSON" \
+  | tr ',' '\n' \
+  | sed -n 's/.*"id"[[:space:]]*:[[:space:]]*"\(.*\)".*/\1/p' \
+  | head -1 \
+  | sed 's#.*[\\/]##; s#\.gguf$##')"
+[ -n "$SERVED" ] || SERVED="unknown, /v1/models gave no id"
+
 export ANTHROPIC_BASE_URL="$BASE"
 export ANTHROPIC_AUTH_TOKEN=local          # not validated, no key set on the server
-export ANTHROPIC_MODEL=qwen                # ignored in single-model mode
-export ANTHROPIC_DEFAULT_HAIKU_MODEL=qwen  # background calls hit the same model
+export ANTHROPIC_MODEL=local                # ignored in single-model mode
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=local  # background calls hit the same model
 
-# Claude Code does not recognise "qwen", so it assumes a 200k window and lets
-# a session grow past what the server will accept. Tell it the real number.
-# Keep this in step with -c in serve/qwen.ps1.
+# Claude Code does not recognise these model names, so it assumes a 200k window
+# and lets a session grow past what the server will accept. Tell it the real
+# number. Keep this in step with -c in whichever launch script is serving:
+# serve/gptoss.ps1 or serve/qwen.ps1, both 131072 by default.
 export CLAUDE_CODE_MAX_CONTEXT_TOKENS=131072
 
-echo "Claude Code -> ${BASE}, 128k context, Qwen3.5-9B Q6_K"
+echo "Claude Code -> ${BASE}, 128k context, ${SERVED}"
 exec claude "$@"

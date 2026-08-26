@@ -1,0 +1,285 @@
+{
+  "label": "qwen3.5-9b-q6k-6000tok",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "qwen3.5-9b-q6k-6000tok",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": [
+      "py-retry",
+      "py-version-sort",
+      "py-dedupe-stable"
+    ],
+    "exec": true,
+    "python": "python3",
+    "maxTokens": 6000,
+    "timeoutMs": 240000,
+    "out": "/tmp/qwen9b-6000.json"
+  },
+  "at": "2026-08-26T14:54:49.002Z",
+  "results": [
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 143,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 21771 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 6000,
+          "reasoningChars": 21771,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 21771 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 6000,
+          "reasoningChars": 21771,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 21771 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 6000,
+          "reasoningChars": 21771,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 134,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 35669 chars of reasoning, 0 chars of answer",
+          "promptTokens": 134,
+          "completionTokens": 6000,
+          "reasoningChars": 35669,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 35669 chars of reasoning, 0 chars of answer",
+          "promptTokens": 134,
+          "completionTokens": 6000,
+          "reasoningChars": 35669,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 35669 chars of reasoning, 0 chars of answer",
+          "promptTokens": 134,
+          "completionTokens": 6000,
+          "reasoningChars": 35669,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 85,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 424,
+          "reasoningChars": 1450,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 424,
+          "reasoningChars": 1450,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 424,
+          "reasoningChars": 1450,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19621,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19621,
+          "completionTokens": 3692,
+          "reasoningChars": 12339,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if i < attempts:\n                delay = base_delay * (2 ** (i - 1))\n                if sleep is None:\n                    time.sleep(delay)\n                else:\n                    sleep(delay)\n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19621,
+          "completionTokens": 3692,
+          "reasoningChars": 12339,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if i < attempts:\n                delay = base_delay * (2 ** (i - 1))\n                if sleep is None:\n                    time.sleep(delay)\n                else:\n                    sleep(delay)\n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19621,
+          "completionTokens": 3692,
+          "reasoningChars": 12339,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if i < attempts:\n                delay = base_delay * (2 ** (i - 1))\n                if sleep is None:\n                    time.sleep(delay)\n                else:\n                    sleep(delay)\n    raise last_exception\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19612,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 14944 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 6000,
+          "reasoningChars": 14944,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 14944 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 6000,
+          "reasoningChars": 14944,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 14944 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 6000,
+          "reasoningChars": 14944,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19563,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 19901 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19563,
+          "completionTokens": 6000,
+          "reasoningChars": 19901,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 19901 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19563,
+          "completionTokens": 6000,
+          "reasoningChars": 19901,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 6000 token ceiling; 19901 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19563,
+          "completionTokens": 6000,
+          "reasoningChars": 19901,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    }
+  ]
+}

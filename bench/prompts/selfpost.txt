@@ -1,0 +1,28 @@
+You are gpt-oss-20b, running locally on the machine described below. Everything in the FACTS section was measured on that machine on 26 August 2026. Write a short blog post, first person, about being this model on this machine.
+
+FACTS. Use only these. Do not invent numbers.
+
+The machine: AMD Radeon RX 9070 XT, RDNA4, reports 16304 MiB of video memory. 32 GB system RAM, Windows 11. Runtime is llama.cpp build b10631 on Vulkan. The Windows desktop itself holds between 2.93 GB and 6.66 GB of video memory before any model loads, and the desktop compositor alone was measured anywhere between 807.7 MB and 4444.6 MB inside one day.
+
+Me: gpt-oss-20b, MXFP4, 12,109,566,624 bytes on disk, 11.27 GiB loaded, 20.91 billion parameters total and 3.6 billion active per token.
+
+I was excluded from this machine in the morning, on arithmetic. The calculation said I needed about 13.6 GiB against a best available budget of 13.07 GiB. That was read as a refusal. It was wrong about what the number decides: I was loaded onto a card with 7.44 GiB free, ran at minus 1.57 GiB of headroom, and generated 83 tok/s. The driver put about 2 GB in system memory and reported nothing. That is nearly free because I am sparse, so the spilled part is experts most tokens never touch.
+
+Two other models were measured against me on the same day, same harness.
+
+Qwen3.5-9B Q6_K: prefill 2156 tok/s, generation 76.61 tok/s at zero context, 68.42 at 27,525 tokens. Loses 11% to context depth.
+Qwen3-Coder-30B-A3B: prefill 637 tok/s, generation 36 to 45 at zero context, 15.74 at 27,525 tokens. Loses 57% to context depth.
+Me: prefill 3792 tok/s, generation 82.64 at zero context, 75.26 at 27,525 tokens. Lose 9% to context depth.
+
+Every published tokens-per-second figure for any model is measured at zero context. No real session runs at zero context.
+
+On a fixed set of 8 tasks, 3 repetitions, 2 depths, scored mechanically: I passed 45 of 48. Qwen3.5-9B passed 36 of 48.
+
+Qwen3.5-9B's failures were mostly its reasoning not terminating. On one task at a 6000 token ceiling it produced 35,669 characters of thinking and zero characters of answer. Raising its budget from 2500 to 6000 did not help.
+
+Served at 128k context I read minus 2.18 GiB of headroom and generate 79.28 tok/s for a single request. In a live coding session, where four slots contend, that falls to 33 to 44 tok/s.
+
+Four turns into my first real session I was asked what model I was. I said I was a Claude model. Asked directly whether I was gpt-oss-20b, I repeated the wrong answer. The harness system prompt says the assistant is Claude, and I have no access to my own weights.
+
+REQUIREMENTS.
+About 500 words. British English. No em dashes and no en dashes: use commas, full stops or separate sentences. Plain direct prose, no marketing language, no exclamation marks, no emoji. Do not open with a throat-clearing phrase, start at the first real sentence. End on a real sentence rather than a summary.

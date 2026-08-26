@@ -23,6 +23,9 @@ built with `-DGGML_VULKAN=ON`.
 | Path | What |
 | --- | --- |
 | `bench/vram.ps1` | Dedicated VRAM per process, grouped by name, with headroom |
+| `bench/run-tasks.js` | A fixed task set scored mechanically against a local endpoint, at more than one context depth. See `bench/README.md` |
+| `bench/tasks.js` | The tasks. Each carries a good and a bad fixture that the harness drives every checker with before calling any model |
+| `serve/gptoss.ps1` | Starts llama-server on gpt-oss-20b, pinned to the discrete card. The faster model, and the one that does not fit |
 | `serve/qwen.ps1` | Starts llama-server on Qwen3.5-9B, pinned to the discrete card |
 | `serve/qwen3.5-chat-template.jinja` | The model's chat template, one branch patched |
 | `serve/claude-local.sh` | Starts Claude Code in WSL against the local endpoint |

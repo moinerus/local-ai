@@ -1,0 +1,711 @@
+{
+  "label": "qwen3.5-9b-q6k",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "qwen3.5-9b-q6k",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": null,
+    "exec": true,
+    "python": "python3",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "/tmp/qwen9b-tasks.json"
+  },
+  "at": "2026-08-26T14:34:54.739Z",
+  "results": [
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 168,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 168,
+          "completionTokens": 311,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 168,
+          "completionTokens": 311,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 168,
+          "completionTokens": 311,
+          "reasoningChars": 919,
+          "finish": "stop",
+          "output": "[2, 4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 143,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8713 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 2500,
+          "reasoningChars": 8713,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8713 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 2500,
+          "reasoningChars": 8713,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8713 chars of reasoning, 0 chars of answer",
+          "promptTokens": 143,
+          "completionTokens": 2500,
+          "reasoningChars": 8713,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 134,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-104098-i1m726lvinb.py\", line 47, in <lambda> /     int(v.split('.')[2]), / ValueError: invalid literal for int() with base 10: '0-alpha'",
+          "promptTokens": 134,
+          "completionTokens": 1426,
+          "reasoningChars": 3909,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        prerelease = parts[3] if len(parts) > 3 else None\n        return (major, minor, patch, prerelease)\n\n    def compare_prerelease(a, b):\n        if a is None and b is None:\n            return 0\n        if a is None:\n            return 1\n        if b is None:\n            return -1\n        a_parts = a.split('.')\n        b_parts = b.split('.')\n        for i in range(max(len(a_parts), len(b_parts))):\n            if i >= len(a_parts):\n                return -1\n            if i >= len(b_parts):\n                return 1\n            a_id = a_parts[i]\n            b_id = b_parts[i]\n            try:\n                a_num = int(a_id)\n                b_num = int(b_id)\n                if a_num != b_num:\n                    return a_num - b_num\n            except ValueError:\n                if a_id != b_id:\n                    return -1 if a_id < b_id else 1\n        return 0\n\n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        for i in range(3):\n            if p1[i] != p2[i]:\n                return p1[i] - p2[i]\n        return compare_prerelease(p1[3], p2[3])\n\n    return sorted(versions, key=lambda v: (\n        int(v.split('.')[0]),\n        int(v.split('.')[1]),\n        int(v.split('.')[2]),\n        v.split('.')[3] if len(v.split('.')) > 3 else None\n    ))\n```"
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-104098-4xv3ntjrc6t.py\", line 47, in <lambda> /     int(v.split('.')[2]), / ValueError: invalid literal for int() with base 10: '0-alpha'",
+          "promptTokens": 134,
+          "completionTokens": 1426,
+          "reasoningChars": 3909,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        prerelease = parts[3] if len(parts) > 3 else None\n        return (major, minor, patch, prerelease)\n\n    def compare_prerelease(a, b):\n        if a is None and b is None:\n            return 0\n        if a is None:\n            return 1\n        if b is None:\n            return -1\n        a_parts = a.split('.')\n        b_parts = b.split('.')\n        for i in range(max(len(a_parts), len(b_parts))):\n            if i >= len(a_parts):\n                return -1\n            if i >= len(b_parts):\n                return 1\n            a_id = a_parts[i]\n            b_id = b_parts[i]\n            try:\n                a_num = int(a_id)\n                b_num = int(b_id)\n                if a_num != b_num:\n                    return a_num - b_num\n            except ValueError:\n                if a_id != b_id:\n                    return -1 if a_id < b_id else 1\n        return 0\n\n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        for i in range(3):\n            if p1[i] != p2[i]:\n                return p1[i] - p2[i]\n        return compare_prerelease(p1[3], p2[3])\n\n    return sorted(versions, key=lambda v: (\n        int(v.split('.')[0]),\n        int(v.split('.')[1]),\n        int(v.split('.')[2]),\n        v.split('.')[3] if len(v.split('.')) > 3 else None\n    ))\n```"
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-104098-fra7zaf5pa9.py\", line 47, in <lambda> /     int(v.split('.')[2]), / ValueError: invalid literal for int() with base 10: '0-alpha'",
+          "promptTokens": 134,
+          "completionTokens": 1426,
+          "reasoningChars": 3909,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        prerelease = parts[3] if len(parts) > 3 else None\n        return (major, minor, patch, prerelease)\n\n    def compare_prerelease(a, b):\n        if a is None and b is None:\n            return 0\n        if a is None:\n            return 1\n        if b is None:\n            return -1\n        a_parts = a.split('.')\n        b_parts = b.split('.')\n        for i in range(max(len(a_parts), len(b_parts))):\n            if i >= len(a_parts):\n                return -1\n            if i >= len(b_parts):\n                return 1\n            a_id = a_parts[i]\n            b_id = b_parts[i]\n            try:\n                a_num = int(a_id)\n                b_num = int(b_id)\n                if a_num != b_num:\n                    return a_num - b_num\n            except ValueError:\n                if a_id != b_id:\n                    return -1 if a_id < b_id else 1\n        return 0\n\n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        for i in range(3):\n            if p1[i] != p2[i]:\n                return p1[i] - p2[i]\n        return compare_prerelease(p1[3], p2[3])\n\n    return sorted(versions, key=lambda v: (\n        int(v.split('.')[0]),\n        int(v.split('.')[1]),\n        int(v.split('.')[2]),\n        v.split('.')[3] if len(v.split('.')) > 3 else None\n    ))\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 85,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 2494,
+          "reasoningChars": 9649,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 2494,
+          "reasoningChars": 9649,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 85,
+          "completionTokens": 2494,
+          "reasoningChars": 9649,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 201,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 201,
+          "completionTokens": 248,
+          "reasoningChars": 890,
+          "finish": "stop",
+          "output": "{\n  \"action\": \"remove\",\n  \"subject\": \"cache\",\n  \"removes_behaviour\": true\n}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 201,
+          "completionTokens": 248,
+          "reasoningChars": 890,
+          "finish": "stop",
+          "output": "{\n  \"action\": \"remove\",\n  \"subject\": \"cache\",\n  \"removes_behaviour\": true\n}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 201,
+          "completionTokens": 248,
+          "reasoningChars": 890,
+          "finish": "stop",
+          "output": "{\n  \"action\": \"remove\",\n  \"subject\": \"cache\",\n  \"removes_behaviour\": true\n}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 267,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 267,
+          "completionTokens": 273,
+          "reasoningChars": 879,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 267,
+          "completionTokens": 273,
+          "reasoningChars": 879,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 267,
+          "completionTokens": 273,
+          "reasoningChars": 879,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 87,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 87,
+          "completionTokens": 165,
+          "reasoningChars": 721,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 87,
+          "completionTokens": 165,
+          "reasoningChars": 721,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 87,
+          "completionTokens": 165,
+          "reasoningChars": 721,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 0,
+      "achievedPromptTokens": 64,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 64,
+          "completionTokens": 249,
+          "reasoningChars": 876,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 64,
+          "completionTokens": 249,
+          "reasoningChars": 876,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 64,
+          "completionTokens": 249,
+          "reasoningChars": 876,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    },
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 19646,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19646,
+          "completionTokens": 380,
+          "reasoningChars": 1086,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19646,
+          "completionTokens": 380,
+          "reasoningChars": 1086,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19646,
+          "completionTokens": 380,
+          "reasoningChars": 1086,
+          "finish": "stop",
+          "output": "[2, 4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19621,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8651 chars of reasoning, 135 chars of answer",
+          "promptTokens": 19621,
+          "completionTokens": 2500,
+          "reasoningChars": 8651,
+          "finish": "length",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n"
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8651 chars of reasoning, 135 chars of answer",
+          "promptTokens": 19621,
+          "completionTokens": 2500,
+          "reasoningChars": 8651,
+          "finish": "length",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n"
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 8651 chars of reasoning, 135 chars of answer",
+          "promptTokens": 19621,
+          "completionTokens": 2500,
+          "reasoningChars": 8651,
+          "finish": "length",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    last_exception = None\n    for i in range(1, attempts + 1):\n"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19612,
+      "tally": {
+        "pass": 0,
+        "fail": 0,
+        "format": 0,
+        "truncated": 3,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 7868 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 2500,
+          "reasoningChars": 7868,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 7868 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 2500,
+          "reasoningChars": 7868,
+          "finish": "length",
+          "output": ""
+        },
+        {
+          "status": "truncated",
+          "detail": "hit the 2500 token ceiling; 7868 chars of reasoning, 0 chars of answer",
+          "promptTokens": 19612,
+          "completionTokens": 2500,
+          "reasoningChars": 7868,
+          "finish": "length",
+          "output": ""
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19563,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19563,
+          "completionTokens": 1950,
+          "reasoningChars": 7035,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19563,
+          "completionTokens": 1950,
+          "reasoningChars": 7035,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19563,
+          "completionTokens": 1950,
+          "reasoningChars": 7035,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    result = []\n    for item in items:\n        if item not in result:\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 19679,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19679,
+          "completionTokens": 258,
+          "reasoningChars": 924,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19679,
+          "completionTokens": 258,
+          "reasoningChars": 924,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19679,
+          "completionTokens": 258,
+          "reasoningChars": 924,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19745,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19745,
+          "completionTokens": 267,
+          "reasoningChars": 867,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19745,
+          "completionTokens": 267,
+          "reasoningChars": 867,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "pass",
+          "detail": "8 lines, result kept=false",
+          "promptTokens": 19745,
+          "completionTokens": 267,
+          "reasoningChars": 867,
+          "finish": "stop",
+          "output": "{\"lines\": 8, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19565,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19565,
+          "completionTokens": 156,
+          "reasoningChars": 593,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19565,
+          "completionTokens": 156,
+          "reasoningChars": 593,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19565,
+          "completionTokens": 156,
+          "reasoningChars": 593,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 25000,
+      "achievedPromptTokens": 19542,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19542,
+          "completionTokens": 408,
+          "reasoningChars": 1347,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19542,
+          "completionTokens": 408,
+          "reasoningChars": 1347,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19542,
+          "completionTokens": 408,
+          "reasoningChars": 1347,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    }
+  ]
+}

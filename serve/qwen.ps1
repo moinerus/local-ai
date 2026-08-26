@@ -27,7 +27,7 @@
     and keeps twice as much of it. 128k at f16 leaves 0.69 GiB, which is one
     browser tab from spilling into system RAM.
 
-    128k matters here because the context is not free at the start. The vault's
+    128k matters here because the context is not free at the start. A project's
     always-loaded CLAUDE.md and rules files alone measure 16,755 tokens through
     /v1/messages/count_tokens, before Claude Code's own system prompt and tool
     definitions.
