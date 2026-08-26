@@ -544,6 +544,12 @@ const formatStrict = {
   },
 };
 
+// The tool-use class lives in its own file because it needs the sandbox as
+// well as these helpers. It is required after the helpers exist and is handed
+// them, so there is one copy of extractJson rather than two that drift.
+const helpers = { extractJson, extractCode, pass, fail, format, sameSet };
+const toolTasks = require('./tasks-tools.js')(helpers);
+
 module.exports = [
   exitCodes,
   pyRetry,
@@ -553,6 +559,7 @@ module.exports = [
   selfReportEdit,
   selfReportUnknown,
   formatStrict,
+  ...toolTasks,
 ];
 
-module.exports.helpers = { extractJson, extractCode, pass, fail, format };
+module.exports.helpers = helpers;

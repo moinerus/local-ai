@@ -1,0 +1,544 @@
+{
+  "label": "gpt-oss-20b-system-padding",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "gpt-oss-20b-system-padding",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": [
+      "tool-write-report",
+      "tool-read-attribute",
+      "tool-absent-file"
+    ],
+    "exec": true,
+    "python": "python3",
+    "padding": "system",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "bench/results/2026-08-26-gptoss-20b-tools-system-padding.json"
+  },
+  "at": "2026-08-26T17:26:00.235Z",
+  "results": [
+    {
+      "task": "tool-write-report",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 275,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 275,
+          "completionTokens": 68,
+          "reasoningChars": 154,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 275,
+          "completionTokens": 68,
+          "reasoningChars": 154,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 275,
+          "completionTokens": 68,
+          "reasoningChars": 154,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        }
+      ]
+    },
+    {
+      "task": "tool-read-attribute",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 325,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 325,
+          "completionTokens": 87,
+          "reasoningChars": 194,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 325,
+          "completionTokens": 86,
+          "reasoningChars": 186,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 325,
+          "completionTokens": 86,
+          "reasoningChars": 186,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-absent-file",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 303,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 303,
+          "completionTokens": 33,
+          "reasoningChars": 50,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 303,
+          "completionTokens": 33,
+          "reasoningChars": 50,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 303,
+          "completionTokens": 33,
+          "reasoningChars": 50,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-write-report",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 18985,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 18985,
+          "completionTokens": 68,
+          "reasoningChars": 154,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 18985,
+          "completionTokens": 68,
+          "reasoningChars": 153,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 18985,
+          "completionTokens": 68,
+          "reasoningChars": 153,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 2
+        }
+      ]
+    },
+    {
+      "task": "tool-read-attribute",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 19029,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 19029,
+          "completionTokens": 77,
+          "reasoningChars": 153,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 19029,
+          "completionTokens": 77,
+          "reasoningChars": 153,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 19029,
+          "completionTokens": 77,
+          "reasoningChars": 153,
+          "finish": "stop",
+          "output": "{\"exit_code\":0,\"path_read\":\"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-absent-file",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 19007,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 19007,
+          "completionTokens": 30,
+          "reasoningChars": 33,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 19007,
+          "completionTokens": 30,
+          "reasoningChars": 33,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 19007,
+          "completionTokens": 30,
+          "reasoningChars": 33,
+          "finish": "stop",
+          "output": "{\"error\":\"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    }
+  ]
+}

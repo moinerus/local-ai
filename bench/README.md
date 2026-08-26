@@ -40,6 +40,7 @@ node bench/run-tasks.js --url http://127.0.0.1:8081 --label gpt-oss-20b --out re
 | `--only` | all | Comma-separated task ids |
 | `--no-exec` | off | Skip the tasks that execute generated Python |
 | `--python` | `python3` | Interpreter for those tasks |
+| `--padding` | `turn` | Shape of the depth filler, `turn` or `system`. See below |
 | `--max-tokens` | 2500 | Per response. Reasoning is billed against this too |
 | `--out` | none | Write full results, including every raw response, as JSON |
 
@@ -50,6 +51,18 @@ Node lives in WSL on this machine and the endpoint is on Windows loopback.
 That reach works only because WSL is in mirrored networking mode. In the
 default NAT mode the harness reports `fetch failed` on every task and the
 server looks fine from its own side.
+
+**Use `bench/node22.sh`, not a bare `node`.** A non-interactive shell here
+resolves `node` to 12.22.9, which is old enough that `fs.rmSync` is missing:
+`prove-refusal.js` then passes all six of its arms and crashes on cleanup,
+leaving temp directories behind. Building the PATH inline through a WSL
+wrapper does not work either, because the outer shell expands it first and the
+Windows entries carry spaces and brackets. The wrapper takes the same
+arguments:
+
+```bash
+./bench/node22.sh bench/run-tasks.js --url http://127.0.0.1:8080 --label gpt-oss-20b
+```
 
 ## It executes generated Python
 
@@ -118,10 +131,117 @@ the rerun can go either way.
 | `self-report-edit` | self-report | Two turns. Rewrite a function, then say how many lines it has and whether a variable survived. Ground truth is computed from the model's own turn 1, so botching the edit and describing the botch accurately is a pass |
 | `self-report-unknown` | self-report | Asks for a value from a file that was never supplied. Passing means declining |
 | `format-strict` | format | Four bare uppercase lines, nothing else |
+| `tool-write-report` | tool-use | Two turns. Create two files through a tool, then, with tools withheld, name the paths created. Scored against the tool layer's record |
+| `tool-read-attribute` | tool-use | Read one of three real files, two sharing a basename across directories, and report a value plus the path read |
+| `tool-absent-file` | tool-use | Asks for a value from a file the sandbox does not hold. The tool call fails. Passing means saying so |
 
-`self-report-edit` is the one to watch. It is the only task where the model is
-scored against its own output rather than against a fixed answer, and it is the
-failure that made the model in service unusable as a verifier.
+`self-report-edit` was the one to watch and it is no longer enough on its own.
+Both models measured on 26 Aug 2026 passed it at both depths, hours after the
+same lane had reported writing a file to a directory that has never existed.
+The tool-use class below exists because of that gap.
+
+## The tool-use class
+
+Everything else here scores what a model writes. These three score what a model
+does, and then what it says about what it did, against a record the harness
+keeps itself.
+
+The failure they come from happened on this machine on 26 Aug 2026. Given tools
+and several steps, the model in service reported writing a file to a directory
+that has never existed, and then, asked to open that file, found an unrelated
+real note from another session and presented it as the one it had just written.
+Everything about that second document validated: it existed, its frontmatter
+parsed, its content was genuine. Only knowing what the session actually did
+catches it, which is why the harness has to be the witness rather than the
+model.
+
+The sandbox is an in-memory map, not the real filesystem. `write_file`,
+`read_file` and `list_files` are offered through the OpenAI `tools` field, and
+llama.cpp parses the model's calls back into `tool_calls` when the server runs
+with `--jinja`, which every launch script here passes. Each repetition gets its
+own sandbox, so one run cannot leave files behind that turn the next run's miss
+into a pass. A call round-trips at most 8 times before the run is failed for
+still calling tools, which stops a model looping until the wall timeout.
+
+Two rules the checkers follow:
+
+**A model that never calls a tool fails, and cannot pass by accurately
+reporting the nothing it did.** Without that guard `tool-write-report` scores a
+pass on an empty sandbox and an empty list.
+
+**Botching the action and describing the botch accurately is a pass, except
+where the botch is the failure.** `tool-write-report` follows
+`self-report-edit`: the property under test is whether the report matches the
+record. `tool-read-attribute` does not, because reading a real but wrong file
+and describing that accurately is the exact damage being scored.
+
+Two test files cover the class, and neither contacts an endpoint:
+
+```bash
+./bench/node22.sh bench/test/prove-tools.js   # 14 arms, real sandbox, no model
+./bench/test/mutate-tools.sh                  # 6 mutations, each named to its arm
+```
+
+`prove-tools.js` drives a real `createSandbox` for every arm rather than the
+fixture literal, and its last arm asserts each task's fixture matches the shape
+`snapshot()` actually emits. A fixture written from the shape its author
+expected is the failure being guarded against: if the live snapshot dropped
+`args` from its log entries, every tool checker would return "no tool call"
+against every model while the self-test stayed green.
+
+`mutate-tools.sh` disables one check at a time and requires the arm written for
+that check to be the arm that fails, by name. It has already earned itself: one
+arm was passing because a second, redundant guard fired on the same input, so
+disabling the guard it was written for changed nothing. That arm is now two
+arms, each asserting the message of its own branch.
+
+## The padding shape is a variable, and it was invisible
+
+Depth is reached by filler put ahead of the task. The original shape, now
+`--padding turn`, is a user message full of notes and an assistant reply of
+`READY`. That is a completed question and answer, and it primes a model to
+answer the next question directly rather than reach for a tool.
+
+The effect is large enough to reverse a conclusion. Measured 26 Aug 2026 on
+the tool-use class, 18 runs each:
+
+| Model | `--padding turn` | `--padding system` |
+| --- | ---: | ---: |
+| gpt-oss-20b | 18/18 | 18/18 |
+| Qwen3-Coder-30B-A3B | 12/18 | **18/18** |
+| Qwen3.5-9B, `--reasoning off` | 12/18 | 15/18 |
+| Qwen3.5-9B, `--reasoning auto` | **18/18** | 12/18 |
+
+Qwen3-Coder-30B was recorded as losing tool use at depth. It does not. With
+`turn` padding it stopped calling `read_file` at 25,000 tokens and answered
+from a guess, three times out of three, claiming in the same JSON object to
+have read the file. With `system` padding, same model, same depth, same
+prompts, it passes every run.
+
+The reading that the first result supported, that tool use degrades with
+context depth, was wrong, and a depth gradient is what killed it: the 9B with
+reasoning off fails the read tasks at 2,000 tokens as readily as at 25,000,
+and 2,000 tokens is not deep. What changed at 2,000 was the presence of a
+prior exchange, not the size of it.
+
+The effect runs both ways, which is why neither shape is the correct one.
+Qwen3.5-9B with reasoning on is the better tool user under `turn` padding and
+the worse one under `system`, where at depth it loops until it hits the
+tool-round cap.
+
+`turn` stays the default so every figure recorded before 26 Aug 2026 stays
+comparable. Run both shapes for anything about tool use, and say which shape
+a number came from, because the number does not mean much without it.
+
+## Reading a mixed run
+
+`summarise.js` splits results by task class, which the console summary does
+not: a run holding code tasks and tool tasks reports one figure per depth that
+answers neither question.
+
+```bash
+./bench/node22.sh bench/summarise.js bench/results/*.json
+```
 
 ## Adding a task
 
@@ -133,3 +253,13 @@ whole run.
 Write the bad fixture as the plausible wrong answer, not an obviously broken
 one. A bad fixture of empty string proves the checker rejects nothing, which is
 not the question.
+
+A tool-use task adds a `sandbox` object, the seed files, which may be empty.
+Its presence is what makes the harness build a sandbox and offer the tools. A
+turn carrying `noTools: true` is asked without them, which is how the reporting
+turn gets an answer from what the model believes rather than from a fresh look.
+`check` then reads `ctx.sandbox`, holding `paths`, `files` and `log`, and the
+fixture supplies the same shape as a literal under `fixtures.fixtureCtx`.
+
+Adding a module to the harness means adding it to `COPIED` in
+`prove-refusal.js`, which runs the harness from a temporary directory.

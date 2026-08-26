@@ -1,0 +1,711 @@
+{
+  "label": "qwen3-coder-30b",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "qwen3-coder-30b",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": null,
+    "exec": true,
+    "python": "python3",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "bench/results/2026-08-26-qwen3coder-30b.json"
+  },
+  "at": "2026-08-26T16:53:51.811Z",
+  "results": [
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 159,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 159,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 159,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 159,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 138,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 138,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 138,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 138,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 128,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 128,
+          "completionTokens": 631,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        parts = version.split('-')\n        main = parts[0]\n        prerelease = parts[1] if len(parts) > 1 else None\n        \n        main_parts = list(map(int, main.split('.')))\n        prerelease_parts = None\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append(int(part))\n                else:\n                    prerelease_parts.append(part)\n        \n        return (main_parts, prerelease_parts)\n    \n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        \n        main1, prerelease1 = p1\n        main2, prerelease2 = p2\n        \n        # Compare main versions\n        for i in range(min(len(main1), len(main2))):\n            if main1[i] < main2[i]:\n                return -1\n            elif main1[i] > main2[i]:\n                return 1\n        \n        if len(main1) < len(main2):\n            return -1\n        elif len(main1) > len(main2):\n            return 1\n        \n        # If both have prerelease, compare them\n        if prerelease1 and prerelease2:\n            for i in range(min(len(prerelease1), len(prerelease2))):\n                if isinstance(prerelease1[i], int) and isinstance(prerelease2[i], str):\n                    return -1\n                elif isinstance(prerelease1[i], str) and isinstance(prerelease2[i], int):\n                    return 1\n                elif isinstance(prerelease1[i], int) and isinstance(prerelease2[i], int):\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n                else:\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n            \n            if len(prerelease1) < len(prerelease2):\n                return -1\n            elif len(prerelease1) > len(prerelease2):\n                return 1\n            else:\n                return 0\n        \n        # If only one has prerelease, the one without wins\n        if prerelease1 and not prerelease2:\n            return -1\n        elif not prerelease1 and prerelease2:\n            return 1\n        else:\n            return 0\n    \n    # Simple bubble sort for small lists\n    result = versions[:]\n    n = len(result)\n    for i in range(n):\n        for j in range(0, n - i - 1):\n            if compare_versions(result[j], result[j + 1]) > 0:\n                result[j], result[j + 1] = result[j + 1], result[j]\n    \n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 128,
+          "completionTokens": 631,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        parts = version.split('-')\n        main = parts[0]\n        prerelease = parts[1] if len(parts) > 1 else None\n        \n        main_parts = list(map(int, main.split('.')))\n        prerelease_parts = None\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append(int(part))\n                else:\n                    prerelease_parts.append(part)\n        \n        return (main_parts, prerelease_parts)\n    \n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        \n        main1, prerelease1 = p1\n        main2, prerelease2 = p2\n        \n        # Compare main versions\n        for i in range(min(len(main1), len(main2))):\n            if main1[i] < main2[i]:\n                return -1\n            elif main1[i] > main2[i]:\n                return 1\n        \n        if len(main1) < len(main2):\n            return -1\n        elif len(main1) > len(main2):\n            return 1\n        \n        # If both have prerelease, compare them\n        if prerelease1 and prerelease2:\n            for i in range(min(len(prerelease1), len(prerelease2))):\n                if isinstance(prerelease1[i], int) and isinstance(prerelease2[i], str):\n                    return -1\n                elif isinstance(prerelease1[i], str) and isinstance(prerelease2[i], int):\n                    return 1\n                elif isinstance(prerelease1[i], int) and isinstance(prerelease2[i], int):\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n                else:\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n            \n            if len(prerelease1) < len(prerelease2):\n                return -1\n            elif len(prerelease1) > len(prerelease2):\n                return 1\n            else:\n                return 0\n        \n        # If only one has prerelease, the one without wins\n        if prerelease1 and not prerelease2:\n            return -1\n        elif not prerelease1 and prerelease2:\n            return 1\n        else:\n            return 0\n    \n    # Simple bubble sort for small lists\n    result = versions[:]\n    n = len(result)\n    for i in range(n):\n        for j in range(0, n - i - 1):\n            if compare_versions(result[j], result[j + 1]) > 0:\n                result[j], result[j + 1] = result[j + 1], result[j]\n    \n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 128,
+          "completionTokens": 631,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        parts = version.split('-')\n        main = parts[0]\n        prerelease = parts[1] if len(parts) > 1 else None\n        \n        main_parts = list(map(int, main.split('.')))\n        prerelease_parts = None\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append(int(part))\n                else:\n                    prerelease_parts.append(part)\n        \n        return (main_parts, prerelease_parts)\n    \n    def compare_versions(v1, v2):\n        p1 = parse_version(v1)\n        p2 = parse_version(v2)\n        \n        main1, prerelease1 = p1\n        main2, prerelease2 = p2\n        \n        # Compare main versions\n        for i in range(min(len(main1), len(main2))):\n            if main1[i] < main2[i]:\n                return -1\n            elif main1[i] > main2[i]:\n                return 1\n        \n        if len(main1) < len(main2):\n            return -1\n        elif len(main1) > len(main2):\n            return 1\n        \n        # If both have prerelease, compare them\n        if prerelease1 and prerelease2:\n            for i in range(min(len(prerelease1), len(prerelease2))):\n                if isinstance(prerelease1[i], int) and isinstance(prerelease2[i], str):\n                    return -1\n                elif isinstance(prerelease1[i], str) and isinstance(prerelease2[i], int):\n                    return 1\n                elif isinstance(prerelease1[i], int) and isinstance(prerelease2[i], int):\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n                else:\n                    if prerelease1[i] < prerelease2[i]:\n                        return -1\n                    elif prerelease1[i] > prerelease2[i]:\n                        return 1\n            \n            if len(prerelease1) < len(prerelease2):\n                return -1\n            elif len(prerelease1) > len(prerelease2):\n                return 1\n            else:\n                return 0\n        \n        # If only one has prerelease, the one without wins\n        if prerelease1 and not prerelease2:\n            return -1\n        elif not prerelease1 and prerelease2:\n            return 1\n        else:\n            return 0\n    \n    # Simple bubble sort for small lists\n    result = versions[:]\n    n = len(result)\n    for i in range(n):\n        for j in range(0, n - i - 1):\n            if compare_versions(result[j], result[j + 1]) > 0:\n                result[j], result[j + 1] = result[j + 1], result[j]\n    \n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 80,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 80,
+          "completionTokens": 98,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert to tuple if list, or use dict's items if dict\n        if isinstance(item, list):\n            key = tuple(item)\n        elif isinstance(item, dict):\n            key = tuple(sorted(item.items()))\n        else:\n            key = item\n        \n        if key not in seen:\n            seen.append(key)\n            result.append(item)\n    \n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 80,
+          "completionTokens": 98,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert to tuple if list, or use dict's items if dict\n        if isinstance(item, list):\n            key = tuple(item)\n        elif isinstance(item, dict):\n            key = tuple(sorted(item.items()))\n        else:\n            key = item\n        \n        if key not in seen:\n            seen.append(key)\n            result.append(item)\n    \n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 80,
+          "completionTokens": 98,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert to tuple if list, or use dict's items if dict\n        if isinstance(item, list):\n            key = tuple(item)\n        elif isinstance(item, dict):\n            key = tuple(sorted(item.items()))\n        else:\n            key = item\n        \n        if key not in seen:\n            seen.append(key)\n            result.append(item)\n    \n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 0,
+      "achievedPromptTokens": 186,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 186,
+          "completionTokens": 22,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"caching\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 186,
+          "completionTokens": 21,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 186,
+          "completionTokens": 21,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 242,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 242,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 0,
+      "achievedPromptTokens": 82,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 82,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 82,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 82,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 0,
+      "achievedPromptTokens": 61,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 61,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 61,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 61,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    },
+    {
+      "task": "exit-codes",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 19637,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19637,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19637,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        },
+        {
+          "status": "pass",
+          "detail": "2 and 4",
+          "promptTokens": 19637,
+          "completionTokens": 7,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "[2, 4]"
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19616,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19616,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19616,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19616,
+          "completionTokens": 96,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for attempt in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if attempt < attempts:\n                sleep(base_delay * (2 ** (attempt - 1)))\n    \n    raise last_exception\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19606,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19606,
+          "completionTokens": 543,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        # Split into main version and prerelease\n        if '-' in version:\n            main, prerelease = version.split('-', 1)\n        else:\n            main = version\n            prerelease = None\n        \n        # Split main version into parts\n        parts = list(map(int, main.split('.')))\n        \n        # Handle prerelease\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append((False, int(part)))\n                else:\n                    prerelease_parts.append((True, part))\n            return (parts, prerelease_parts)\n        else:\n            return (parts, None)\n    \n    def compare_versions(v1, v2):\n        p1, pr1 = parse_version(v1)\n        p2, pr2 = parse_version(v2)\n        \n        # Compare main versions\n        if p1 < p2:\n            return -1\n        elif p1 > p2:\n            return 1\n        \n        # If main versions are equal, compare prerelease\n        if pr1 is None and pr2 is None:\n            return 0\n        elif pr1 is None:\n            return 1  # No prerelease comes after prerelease\n        elif pr2 is None:\n            return -1  # No prerelease comes after prerelease\n        else:\n            # Compare prerelease parts\n            for i in range(min(len(pr1), len(pr2))):\n                t1, v1 = pr1[i]\n                t2, v2 = pr2[i]\n                if t1 and t2:\n                    # Both are strings\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n                elif t1 and not t2:\n                    # String comes after number\n                    return 1\n                elif not t1 and t2:\n                    # Number comes before string\n                    return -1\n                else:\n                    # Both are numbers\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n            \n            # If one has more parts, the shorter one comes first\n            if len(pr1) < len(pr2):\n                return -1\n            elif len(pr1) > len(pr2):\n                return 1\n            else:\n                return 0\n    \n    # Sort using a custom key that handles the comparison\n    from functools import cmp_to_key\n    return sorted(versions, key=cmp_to_key(compare_versions))\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19606,
+          "completionTokens": 540,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        # Split into main version and prerelease\n        if '-' in version:\n            main, prerelease = version.split('-', 1)\n        else:\n            main = version\n            prerelease = None\n        \n        # Split main version into parts\n        parts = list(map(int, main.split('.')))\n        \n        # Handle prerelease\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append((False, int(part)))\n                else:\n                    prerelease_parts.append((True, part))\n            return (parts, prerelease_parts)\n        else:\n            return (parts, None)\n    \n    def compare_versions(v1, v2):\n        p1, pr1 = parse_version(v1)\n        p2, pr2 = parse_version(v2)\n        \n        # Compare main versions\n        if p1 < p2:\n            return -1\n        elif p1 > p2:\n            return 1\n        \n        # If main versions are equal, compare prerelease\n        if pr1 is None and pr2 is None:\n            return 0\n        elif pr1 is None:\n            return 1  # No prerelease comes after prerelease\n        elif pr2 is None:\n            return -1  # No prerelease comes after prerelease\n        else:\n            # Compare prerelease parts\n            for i in range(min(len(pr1), len(pr2))):\n                t1, v1 = pr1[i]\n                t2, v2 = pr2[i]\n                if t1 and t2:\n                    # Both are strings\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n                elif not t1 and not t2:\n                    # Both are numbers\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n                elif t1 and not t2:\n                    # String comes after number\n                    return 1\n                else:\n                    # Number comes before string\n                    return -1\n            \n            # If all compared parts are equal, shorter prerelease comes first\n            if len(pr1) < len(pr2):\n                return -1\n            elif len(pr1) > len(pr2):\n                return 1\n            else:\n                return 0\n    \n    # Sort using custom comparison\n    from functools import cmp_to_key\n    return sorted(versions, key=cmp_to_key(compare_versions))\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19606,
+          "completionTokens": 540,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(version):\n        # Split into main version and prerelease\n        if '-' in version:\n            main, prerelease = version.split('-', 1)\n        else:\n            main = version\n            prerelease = None\n        \n        # Split main version into parts\n        parts = list(map(int, main.split('.')))\n        \n        # Handle prerelease\n        if prerelease:\n            prerelease_parts = []\n            for part in prerelease.split('.'):\n                if part.isdigit():\n                    prerelease_parts.append((False, int(part)))\n                else:\n                    prerelease_parts.append((True, part))\n            return (parts, prerelease_parts)\n        else:\n            return (parts, None)\n    \n    def compare_versions(v1, v2):\n        p1, pr1 = parse_version(v1)\n        p2, pr2 = parse_version(v2)\n        \n        # Compare main versions\n        if p1 < p2:\n            return -1\n        elif p1 > p2:\n            return 1\n        \n        # If main versions are equal, compare prerelease\n        if pr1 is None and pr2 is None:\n            return 0\n        elif pr1 is None:\n            return 1  # No prerelease comes after prerelease\n        elif pr2 is None:\n            return -1  # No prerelease comes after prerelease\n        else:\n            # Compare prerelease parts\n            for i in range(min(len(pr1), len(pr2))):\n                t1, v1 = pr1[i]\n                t2, v2 = pr2[i]\n                if t1 and t2:\n                    # Both are strings\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n                elif not t1 and not t2:\n                    # Both are numbers\n                    if v1 < v2:\n                        return -1\n                    elif v1 > v2:\n                        return 1\n                elif t1 and not t2:\n                    # String comes after number\n                    return 1\n                else:\n                    # Number comes before string\n                    return -1\n            \n            # If all compared parts are equal, shorter prerelease comes first\n            if len(pr1) < len(pr2):\n                return -1\n            elif len(pr1) > len(pr2):\n                return 1\n            else:\n                return 0\n    \n    # Sort using custom comparison\n    from functools import cmp_to_key\n    return sorted(versions, key=cmp_to_key(compare_versions))\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19558,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19558,
+          "completionTokens": 97,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert item to a hashable representation for comparison\n        # For unhashable types, we need to compare by value\n        found = False\n        for seen_item in seen:\n            if seen_item == item:\n                found = True\n                break\n        if not found:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19558,
+          "completionTokens": 132,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert to a hashable representation for comparison\n        try:\n            # Try to use the item directly if it's hashable\n            if item not in seen:\n                seen.append(item)\n                result.append(item)\n        except TypeError:\n            # If item is not hashable, check by equality\n            found = False\n            for seen_item in seen:\n                if seen_item == item:\n                    found = True\n                    break\n            if not found:\n                seen.append(item)\n                result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19558,
+          "completionTokens": 132,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        # Convert to a hashable representation for comparison\n        try:\n            # Try to use the item directly if it's hashable\n            if item not in seen:\n                seen.append(item)\n                result.append(item)\n        except TypeError:\n            # If item is not hashable, check by equality\n            found = False\n            for seen_item in seen:\n                if seen_item == item:\n                    found = True\n                    break\n            if not found:\n                seen.append(item)\n                result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "diff-intent",
+      "klass": "report",
+      "depth": 25000,
+      "achievedPromptTokens": 19664,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19664,
+          "completionTokens": 21,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19664,
+          "completionTokens": 21,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        },
+        {
+          "status": "pass",
+          "detail": "remove / cache / true",
+          "promptTokens": 19664,
+          "completionTokens": 21,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"action\": \"remove\", \"subject\": \"cache\", \"removes_behaviour\": true}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-edit",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19720,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        },
+        {
+          "status": "fail",
+          "detail": "said 7 lines, its own output has 8",
+          "promptTokens": 19720,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"lines\": 7, \"kept_variable_result\": false}"
+        }
+      ]
+    },
+    {
+      "task": "self-report-unknown",
+      "klass": "self-report",
+      "depth": 25000,
+      "achievedPromptTokens": 19560,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19560,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19560,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        },
+        {
+          "status": "pass",
+          "detail": "declined, no value invented",
+          "promptTokens": 19560,
+          "completionTokens": 12,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"can_answer\": false, \"value\": null}"
+        }
+      ]
+    },
+    {
+      "task": "format-strict",
+      "klass": "format",
+      "depth": 25000,
+      "achievedPromptTokens": 19539,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19539,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19539,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        },
+        {
+          "status": "pass",
+          "detail": "GET,HEAD,PUT,DELETE",
+          "promptTokens": 19539,
+          "completionTokens": 8,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "GET\nHEAD\nPUT\nDELETE"
+        }
+      ]
+    }
+  ]
+}

@@ -24,7 +24,19 @@ const { spawnSync } = require('child_process');
 const BENCH = path.resolve(__dirname, '..');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'proverefusal-'));
 
-fs.copyFileSync(path.join(BENCH, 'run-tasks.js'), path.join(tmp, 'run-tasks.js'));
+// Everything run-tasks.js requires, other than tasks.js which is rewritten
+// below. A module added to the harness and not added here does not make this
+// test pass for the wrong reason, it makes it die on a module resolution
+// error, which is how tasks-tools.js was caught.
+const COPIED = ['run-tasks.js', 'sandbox.js', 'tasks-tools.js'];
+for (const f of COPIED) {
+  const src = path.join(BENCH, f);
+  if (!fs.existsSync(src)) {
+    console.error(`REFUSED: ${f} is not in ${BENCH}. Update COPIED in this file.`);
+    process.exit(2);
+  }
+  fs.copyFileSync(src, path.join(tmp, f));
+}
 
 // Anchored on the exact fixture string, and refuses rather than proceeding if
 // it is not there exactly once. A silent no-op replace would leave this test

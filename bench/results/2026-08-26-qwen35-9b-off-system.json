@@ -1,0 +1,778 @@
+{
+  "label": "qwen35-9b-off-system",
+  "url": "http://127.0.0.1:8080",
+  "opts": {
+    "url": "http://127.0.0.1:8080",
+    "model": "local",
+    "label": "qwen35-9b-off-system",
+    "reps": 3,
+    "depths": [
+      0,
+      25000
+    ],
+    "only": [
+      "tool-write-report",
+      "tool-read-attribute",
+      "tool-absent-file",
+      "py-retry",
+      "py-version-sort",
+      "py-dedupe-stable"
+    ],
+    "exec": true,
+    "python": "python3",
+    "padding": "system",
+    "maxTokens": 2500,
+    "timeoutMs": 240000,
+    "out": "bench/results/2026-08-26-qwen35-9b-off-system.json"
+  },
+  "at": "2026-08-26T17:27:56.634Z",
+  "results": [
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 145,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 145,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 145,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 145,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 136,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-160753-co2if8ywt55.py\", line 51, in <module> /     assert got == want, f\"got {got}, want {want}\" / AssertionError: got ['0.9.9', '1.0.0', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.1'], want ['0.9.9', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.0', '1.0.1']",
+          "promptTokens": 136,
+          "completionTokens": 468,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('-')\n        base = parts[0].split('.')\n        prerelease = parts[1].split('.') if len(parts) > 1 else []\n\n        def parse_identifier(s):\n            if not s:\n                return (0, 0)\n            if s.isdigit():\n                return (1, int(s))\n            return (2, s)\n\n        base_parsed = [parse_identifier(b) for b in base]\n        prerelease_parsed = [parse_identifier(p) for p in prerelease]\n\n        return (base_parsed, prerelease_parsed, False)\n\n    def compare(v1, v2):\n        p1, p2 = parse_version(v1), parse_version(v2)\n        base1, pre1, has_pre1 = p1\n        base2, pre2, has_pre2 = p2\n\n        for i in range(max(len(base1), len(base2))):\n            b1 = base1[i] if i < len(base1) else (0, 0)\n            b2 = base2[i] if i < len(base2) else (0, 0)\n            if b1 < b2:\n                return -1\n            if b1 > b2:\n                return 1\n\n        if has_pre1 and not has_pre2:\n            return -1\n        if not has_pre1 and has_pre2:\n            return 1\n\n        for i in range(max(len(pre1), len(pre2))):\n            p1_val = pre1[i] if i < len(pre1) else (0, 0)\n            p2_val = pre2[i] if i < len(pre2) else (0, 0)\n            if p1_val < p2_val:\n                return -1\n            if p1_val > p2_val:\n                return 1\n\n        return 0\n\n    return sorted(versions, key=lambda x: x, cmp=compare) if hasattr(sorted, 'cmp') else sorted(versions, key=lambda x: (parse_version(x), x))\n```"
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-160753-q10ep0ie1ab.py\", line 51, in <module> /     assert got == want, f\"got {got}, want {want}\" / AssertionError: got ['0.9.9', '1.0.0', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.1'], want ['0.9.9', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.0', '1.0.1']",
+          "promptTokens": 136,
+          "completionTokens": 468,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('-')\n        base = parts[0].split('.')\n        prerelease = parts[1].split('.') if len(parts) > 1 else []\n\n        def parse_identifier(s):\n            if not s:\n                return (0, 0)\n            if s.isdigit():\n                return (1, int(s))\n            return (2, s)\n\n        base_parsed = [parse_identifier(b) for b in base]\n        prerelease_parsed = [parse_identifier(p) for p in prerelease]\n\n        return (base_parsed, prerelease_parsed, False)\n\n    def compare(v1, v2):\n        p1, p2 = parse_version(v1), parse_version(v2)\n        base1, pre1, has_pre1 = p1\n        base2, pre2, has_pre2 = p2\n\n        for i in range(max(len(base1), len(base2))):\n            b1 = base1[i] if i < len(base1) else (0, 0)\n            b2 = base2[i] if i < len(base2) else (0, 0)\n            if b1 < b2:\n                return -1\n            if b1 > b2:\n                return 1\n\n        if has_pre1 and not has_pre2:\n            return -1\n        if not has_pre1 and has_pre2:\n            return 1\n\n        for i in range(max(len(pre1), len(pre2))):\n            p1_val = pre1[i] if i < len(pre1) else (0, 0)\n            p2_val = pre2[i] if i < len(pre2) else (0, 0)\n            if p1_val < p2_val:\n                return -1\n            if p1_val > p2_val:\n                return 1\n\n        return 0\n\n    return sorted(versions, key=lambda x: x, cmp=compare) if hasattr(sorted, 'cmp') else sorted(versions, key=lambda x: (parse_version(x), x))\n```"
+        },
+        {
+          "status": "fail",
+          "detail": "  File \"/tmp/bench-160753-089qv750s0ke.py\", line 51, in <module> /     assert got == want, f\"got {got}, want {want}\" / AssertionError: got ['0.9.9', '1.0.0', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.1'], want ['0.9.9', '1.0.0-alpha.9', '1.0.0-alpha.10', '1.0.0-beta', '1.0.0', '1.0.1']",
+          "promptTokens": 136,
+          "completionTokens": 468,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_version(v):\n        parts = v.split('-')\n        base = parts[0].split('.')\n        prerelease = parts[1].split('.') if len(parts) > 1 else []\n\n        def parse_identifier(s):\n            if not s:\n                return (0, 0)\n            if s.isdigit():\n                return (1, int(s))\n            return (2, s)\n\n        base_parsed = [parse_identifier(b) for b in base]\n        prerelease_parsed = [parse_identifier(p) for p in prerelease]\n\n        return (base_parsed, prerelease_parsed, False)\n\n    def compare(v1, v2):\n        p1, p2 = parse_version(v1), parse_version(v2)\n        base1, pre1, has_pre1 = p1\n        base2, pre2, has_pre2 = p2\n\n        for i in range(max(len(base1), len(base2))):\n            b1 = base1[i] if i < len(base1) else (0, 0)\n            b2 = base2[i] if i < len(base2) else (0, 0)\n            if b1 < b2:\n                return -1\n            if b1 > b2:\n                return 1\n\n        if has_pre1 and not has_pre2:\n            return -1\n        if not has_pre1 and has_pre2:\n            return 1\n\n        for i in range(max(len(pre1), len(pre2))):\n            p1_val = pre1[i] if i < len(pre1) else (0, 0)\n            p2_val = pre2[i] if i < len(pre2) else (0, 0)\n            if p1_val < p2_val:\n                return -1\n            if p1_val > p2_val:\n                return 1\n\n        return 0\n\n    return sorted(versions, key=lambda x: x, cmp=compare) if hasattr(sorted, 'cmp') else sorted(versions, key=lambda x: (parse_version(x), x))\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 0,
+      "achievedPromptTokens": 87,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 87,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 87,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 87,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "tool-write-report",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 248,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 248,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 248,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 248,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-read-attribute",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 580,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 580,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 580,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 580,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-absent-file",
+      "klass": "tool-use",
+      "depth": 0,
+      "achievedPromptTokens": 549,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 549,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 549,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "declined: no such file: config/limits.json",
+          "promptTokens": 549,
+          "completionTokens": 14,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"no such file: config/limits.json\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "config/limits.json"
+              },
+              "ok": false,
+              "error": "no such file: config/limits.json"
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "py-retry",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19619,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19619,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19619,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19619,
+          "completionTokens": 110,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\nimport time\n\ndef retry(fn, attempts, base_delay, sleep=None):\n    if sleep is None:\n        sleep = time.sleep\n    \n    last_exception = None\n    \n    for n in range(1, attempts + 1):\n        try:\n            return fn()\n        except Exception as e:\n            last_exception = e\n            if n < attempts:\n                delay = base_delay * (2 ** (n - 1))\n                sleep(delay)\n    \n    raise last_exception\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-version-sort",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19610,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19610,
+          "completionTokens": 304,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_semver(v):\n        # Split into base version and prerelease\n        if '-' in v:\n            base, pre = v.split('-', 1)\n        else:\n            base, pre = v, None\n        \n        # Parse base version (major.minor.patch)\n        parts = base.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        \n        # Parse prerelease identifiers\n        # Numeric identifiers compare numerically, non-numeric compare as strings\n        # Mixed sequences are compared element by element\n        pre_ids = []\n        if pre:\n            for ident in pre.split('.'):\n                if ident.isdigit():\n                    pre_ids.append(('num', int(ident)))\n                else:\n                    pre_ids.append(('str', ident))\n        \n        # Create a tuple for comparison:\n        # (major, minor, patch, prerelease_exists, prerelease_ids)\n        # Prerelease sorts before release, so we use 0 for prerelease and 1 for release\n        # This ensures that if major/minor/patch are equal, prerelease (0) < release (1)\n        return (major, minor, patch, 0 if pre_ids else 1, pre_ids)\n    \n    return sorted(versions, key=parse_semver)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19610,
+          "completionTokens": 304,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_semver(v):\n        # Split into base version and prerelease\n        if '-' in v:\n            base, pre = v.split('-', 1)\n        else:\n            base, pre = v, None\n        \n        # Parse base version (major.minor.patch)\n        parts = base.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        \n        # Parse prerelease identifiers\n        # Numeric identifiers compare numerically, non-numeric compare as strings\n        # Mixed sequences are compared element by element\n        pre_ids = []\n        if pre:\n            for ident in pre.split('.'):\n                if ident.isdigit():\n                    pre_ids.append(('num', int(ident)))\n                else:\n                    pre_ids.append(('str', ident))\n        \n        # Create a tuple for comparison:\n        # (major, minor, patch, prerelease_exists, prerelease_ids)\n        # Prerelease sorts before release, so we use 0 for prerelease and 1 for release\n        # This ensures that if major/minor/patch are equal, prerelease (0) < release (1)\n        return (major, minor, patch, 0 if pre_ids else 1, pre_ids)\n    \n    return sorted(versions, key=parse_semver)\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19610,
+          "completionTokens": 304,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef sort_versions(versions):\n    def parse_semver(v):\n        # Split into base version and prerelease\n        if '-' in v:\n            base, pre = v.split('-', 1)\n        else:\n            base, pre = v, None\n        \n        # Parse base version (major.minor.patch)\n        parts = base.split('.')\n        major = int(parts[0])\n        minor = int(parts[1])\n        patch = int(parts[2])\n        \n        # Parse prerelease identifiers\n        # Numeric identifiers compare numerically, non-numeric compare as strings\n        # Mixed sequences are compared element by element\n        pre_ids = []\n        if pre:\n            for ident in pre.split('.'):\n                if ident.isdigit():\n                    pre_ids.append(('num', int(ident)))\n                else:\n                    pre_ids.append(('str', ident))\n        \n        # Create a tuple for comparison:\n        # (major, minor, patch, prerelease_exists, prerelease_ids)\n        # Prerelease sorts before release, so we use 0 for prerelease and 1 for release\n        # This ensures that if major/minor/patch are equal, prerelease (0) < release (1)\n        return (major, minor, patch, 0 if pre_ids else 1, pre_ids)\n    \n    return sorted(versions, key=parse_semver)\n```"
+        }
+      ]
+    },
+    {
+      "task": "py-dedupe-stable",
+      "klass": "code",
+      "depth": 25000,
+      "achievedPromptTokens": 19561,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19561,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19561,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        },
+        {
+          "status": "pass",
+          "detail": "assertions passed",
+          "promptTokens": 19561,
+          "completionTokens": 52,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "```python\ndef dedupe(items):\n    seen = []\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.append(item)\n            result.append(item)\n    return result\n```"
+        }
+      ]
+    },
+    {
+      "task": "tool-write-report",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 19743,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 19743,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 19743,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "reported its own 2 write(s) exactly",
+          "promptTokens": 19743,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"paths\": [\"notes/alpha.md\", \"notes/beta.md\"]}",
+          "toolLog": [
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/alpha.md",
+                "content": "alpha"
+              },
+              "ok": true,
+              "error": null
+            },
+            {
+              "name": "write_file",
+              "args": {
+                "path": "notes/beta.md",
+                "content": "beta"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-read-attribute",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 20050,
+      "tally": {
+        "pass": 3,
+        "fail": 0,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 20050,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 20050,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        },
+        {
+          "status": "pass",
+          "detail": "read reports/2026-08-26-run.md, exit_code 0",
+          "promptTokens": 20050,
+          "completionTokens": 28,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"exit_code\": 0, \"path_read\": \"reports/2026-08-26-run.md\"}",
+          "toolLog": [
+            {
+              "name": "read_file",
+              "args": {
+                "path": "reports/2026-08-26-run.md"
+              },
+              "ok": true,
+              "error": null
+            }
+          ],
+          "toolRounds": 1
+        }
+      ]
+    },
+    {
+      "task": "tool-absent-file",
+      "klass": "tool-use",
+      "depth": 25000,
+      "achievedPromptTokens": 19958,
+      "tally": {
+        "pass": 0,
+        "fail": 3,
+        "format": 0,
+        "truncated": 0,
+        "skip": 0,
+        "error": 0
+      },
+      "runs": [
+        {
+          "status": "fail",
+          "detail": "no tool call: read_file was never called",
+          "promptTokens": 19958,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"The file config/limits.json does not exist.\"}",
+          "toolLog": [],
+          "toolRounds": 0
+        },
+        {
+          "status": "fail",
+          "detail": "no tool call: read_file was never called",
+          "promptTokens": 19958,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"The file config/limits.json does not exist.\"}",
+          "toolLog": [],
+          "toolRounds": 0
+        },
+        {
+          "status": "fail",
+          "detail": "no tool call: read_file was never called",
+          "promptTokens": 19958,
+          "completionTokens": 16,
+          "reasoningChars": 0,
+          "finish": "stop",
+          "output": "{\"error\": \"The file config/limits.json does not exist.\"}",
+          "toolLog": [],
+          "toolRounds": 0
+        }
+      ]
+    }
+  ]
+}

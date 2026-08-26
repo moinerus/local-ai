@@ -48,11 +48,19 @@
     Context window in tokens. Default 131072, with a q8_0 KV cache. See the
     table above for what each rung costs.
 
+.PARAMETER Reasoning
+    Passed straight to llama-server's --reasoning. 'off' suppresses the
+    thinking block. See the note on the parameter itself for why the template
+    already defaults it off and the server turns it back on.
+
 .EXAMPLE
     .\qwen.ps1
 
 .EXAMPLE
     .\qwen.ps1 -Quant Q4_K_M
+
+.EXAMPLE
+    .\qwen.ps1 -Reasoning off
 #>
 [CmdletBinding()]
 param(
@@ -60,7 +68,19 @@ param(
     [string] $Quant = 'Q6_K',
     [int]    $ContextSize = 131072,
     [string] $CacheType = 'q8_0',
-    [int]    $Port = 8080
+    [int]    $Port = 8080,
+
+    # This model's own template defaults thinking OFF: with enable_thinking
+    # undefined it emits a closed, empty <think> block and goes straight to
+    # the answer. llama-server's default of 'auto' detects a thinking template
+    # and turns it back on, which is why it reasons on every turn here.
+    #
+    # 'off' is worth having as a flag because the reasoning is not only a
+    # latency cost. On 26 Aug 2026 this model produced 35,669 characters of
+    # thinking and zero characters of answer on one task, and raising its
+    # token ceiling from 2500 to 6000 made that worse rather than better.
+    [ValidateSet('auto', 'on', 'off')]
+    [string] $Reasoning = 'auto'
 )
 
 # PS 5.1 turns native stderr into a terminating error under Stop. Do not.
@@ -86,6 +106,7 @@ if ($listening) { Write-Output "something is already listening on $Port"; exit 1
 
 $sizeGiB = [math]::Round((Get-Item $Model).Length / 1GB, 2)
 Write-Output "serving $Quant ($sizeGiB GiB on disk) at $ContextSize tokens, $CacheType KV cache, on 127.0.0.1:$Port"
+Write-Output "reasoning: $Reasoning (llama-server default is auto, which turns this template's thinking back ON)"
 
 & $Exe `
     -m $Model `
@@ -95,6 +116,7 @@ Write-Output "serving $Quant ($sizeGiB GiB on disk) at $ContextSize tokens, $Cac
     -ctk $CacheType `
     -ctv $CacheType `
     --chat-template-file $Template `
+    --reasoning $Reasoning `
     --host 127.0.0.1 `
     --port $Port `
     --jinja

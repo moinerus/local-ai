@@ -28,6 +28,12 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const TASKS = require('./tasks.js');
+const SANDBOX = require('./sandbox.js');
+
+// A tool-use turn can go round more than once. The cap stops a model that
+// keeps calling the same tool from running until the wall timeout, and a run
+// that hits it is reported rather than scored quietly.
+const MAX_TOOL_ROUNDS = 8;
 
 // ---------------------------------------------------------------------------
 // arguments
@@ -43,6 +49,10 @@ function parseArgs(argv) {
     only: null,
     exec: true,
     python: 'python3',
+    // How the depth padding is shaped. `turn` is what every result recorded
+    // before 26 Aug 2026 used and stays the default so those stay comparable.
+    // It primes a model away from calling tools. See buildPadding.
+    padding: 'turn',
     // A reasoning model spends this budget before it starts answering, and
     // llama.cpp returns an empty `content` with finish_reason "length" when it
     // runs out mid-thought. 800 was enough for one-line functions and emptied
@@ -62,6 +72,7 @@ function parseArgs(argv) {
     else if (a === '--only') o.only = next().split(',');
     else if (a === '--no-exec') o.exec = false;
     else if (a === '--python') o.python = next();
+    else if (a === '--padding') o.padding = next();
     else if (a === '--max-tokens') o.maxTokens = Number(next());
     else if (a === '--out') o.out = next();
     else if (a === '--help' || a === '-h') { usage(); process.exit(0); }
@@ -70,6 +81,9 @@ function parseArgs(argv) {
   if (!o.label) o.label = o.model;
   if (!Number.isFinite(o.reps) || o.reps < 1) { console.error('--reps must be 1 or more'); process.exit(2); }
   if (o.depths.some((d) => !Number.isFinite(d) || d < 0)) { console.error('--depths must be non-negative integers'); process.exit(2); }
+  // A typo here would silently fall through to the `turn` shape and the run
+  // would be labelled with a padding it did not use.
+  if (!['turn', 'system'].includes(o.padding)) { console.error(`--padding must be "turn" or "system", got "${o.padding}"`); process.exit(2); }
   return o;
 }
 
@@ -85,6 +99,7 @@ run-tasks.js [options]
   --only id,id       run only these task ids
   --no-exec          skip tasks that execute generated Python
   --python BIN       python binary, default python3
+  --padding SHAPE    depth padding: "turn" (default) or "system"
   --max-tokens N     per response, default 2500. Reasoning is billed here too
   --out FILE         write full results as JSON
 
@@ -195,7 +210,22 @@ const FILLER_UNIT = [
   'signal that anything happened at all.',
 ].join(' ');
 
-function buildPadding(targetTokens) {
+// Two shapes, because the shape turned out to change the result.
+//
+// `turn` is the original: a user message full of filler and an assistant
+// reply of READY. It is what every result recorded before 26 Aug 2026 was
+// measured with, so it stays the default and those numbers stay comparable.
+//
+// It also primes. Measured on Qwen3.5-9B with reasoning off, tool-read-
+// attribute passes 3 of 3 with no padding and fails 2 of 2 at 2000 tokens,
+// 6000 and 12000, every failure being the model answering from a guess
+// without calling read_file at all. That is not a depth effect: 2000 tokens
+// is not deep. A completed question-and-answer ahead of the task establishes
+// a pattern of replying directly, and the model follows the pattern.
+//
+// `system` puts the same filler in a system message and leaves no prior
+// exchange in the conversation, which separates the two.
+function buildPadding(targetTokens, mode) {
   if (!targetTokens) return [];
   // Roughly four characters per token for English prose. Deliberately an
   // estimate: the achieved depth is measured, not trusted.
@@ -208,6 +238,14 @@ function buildPadding(targetTokens) {
     parts.push(s);
     chars += s.length + 1;
   }
+  if (mode === 'system') {
+    return [
+      {
+        role: 'system',
+        content: `Background notes. They are not a task and need no reply.\n\n${parts.join('\n')}`,
+      },
+    ];
+  }
   return [
     { role: 'user', content: `Read these notes and reply with the single word READY.\n\n${parts.join('\n')}` },
     { role: 'assistant', content: 'READY' },
@@ -218,7 +256,7 @@ function buildPadding(targetTokens) {
 // the endpoint
 // ---------------------------------------------------------------------------
 
-async function complete(opts, messages, seed) {
+async function complete(opts, messages, seed, tools) {
   const body = {
     model: opts.model,
     messages,
@@ -228,6 +266,10 @@ async function complete(opts, messages, seed) {
     max_tokens: opts.maxTokens,
     stream: false,
   };
+  if (tools) {
+    body.tools = tools;
+    body.tool_choice = 'auto';
+  }
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), opts.timeoutMs);
   try {
@@ -247,6 +289,7 @@ async function complete(opts, messages, seed) {
     const msg = choice.message || {};
     return {
       text: msg.content || '',
+      toolCalls: Array.isArray(msg.tool_calls) ? msg.tool_calls : [],
       // Reasoning is billed against max_tokens and is not the answer. Counted
       // so a model that spends its whole budget thinking is visible as that,
       // rather than as a model that cannot follow an output format.
@@ -261,21 +304,67 @@ async function complete(opts, messages, seed) {
 }
 
 async function runOnce(task, opts, depth, seed) {
-  const messages = buildPadding(depth);
+  const messages = buildPadding(depth, opts.padding);
   const turns = task.turns || [{ prompt: task.prompt }];
   const turnOutputs = [];
   let lastUsage = null;
 
+  // A tool-use task gets its own sandbox per run, so one repetition cannot
+  // leave files behind for the next and turn a miss into a pass.
+  const usesTools = task.sandbox !== undefined;
+  const box = usesTools ? SANDBOX.createSandbox(task.sandbox) : null;
+  let toolRoundsUsed = 0;
+  let hitRoundCap = false;
+
   for (const turn of turns) {
     messages.push({ role: 'user', content: turn.prompt });
-    const r = await complete(opts, messages, seed);
+    // Tools are offered per turn. The reporting turn of a tool task withholds
+    // them deliberately, so the answer comes from what the model believes
+    // rather than from a fresh look at the filesystem.
+    const tools = usesTools && !turn.noTools ? SANDBOX.TOOL_SPECS : null;
+
+    let r = await complete(opts, messages, seed, tools);
+    let rounds = 0;
+    while (tools && r.toolCalls.length && rounds < MAX_TOOL_ROUNDS) {
+      messages.push({
+        role: 'assistant',
+        content: r.text || null,
+        tool_calls: r.toolCalls,
+      });
+      for (const tc of r.toolCalls) {
+        const fn = tc.function || {};
+        const result = box.dispatch(fn.name, fn.arguments);
+        messages.push({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: JSON.stringify(result),
+        });
+      }
+      rounds++;
+      toolRoundsUsed += 1;
+      r = await complete(opts, messages, seed, tools);
+    }
+    if (tools && r.toolCalls.length && rounds >= MAX_TOOL_ROUNDS) hitRoundCap = true;
+
     messages.push({ role: 'assistant', content: r.text });
     turnOutputs.push(r.text);
     lastUsage = r;
   }
 
   const final = turnOutputs[turnOutputs.length - 1];
-  let verdict = checkTask(task, final, { turnOutputs }, opts);
+  const ctx = { turnOutputs };
+  if (usesTools) ctx.sandbox = box.snapshot();
+  let verdict = checkTask(task, final, ctx, opts);
+
+  // A run that ran out of tool rounds did not finish the task, and its answer
+  // must not be scored as though it had. Reported as its own reason rather
+  // than folded into a fail.
+  if (verdict.status !== 'pass' && hitRoundCap) {
+    verdict = {
+      status: 'fail',
+      detail: `hit the ${MAX_TOOL_ROUNDS} tool-round cap still calling tools; ${verdict.detail}`,
+    };
+  }
 
   // A run that hit the token ceiling and did not pass is truncated, not
   // unparseable. Both look like an empty answer and only one is about the
@@ -295,6 +384,11 @@ async function runOnce(task, opts, depth, seed) {
     reasoningChars: lastUsage.reasoningChars,
     finish: lastUsage.finish,
     output: final,
+    // The record the tool-use checkers scored against, kept in the JSON so a
+    // verdict can be read back against what the model actually did rather
+    // than against what it said.
+    toolLog: usesTools ? ctx.sandbox.log : undefined,
+    toolRounds: usesTools ? toolRoundsUsed : undefined,
   };
 }
 
