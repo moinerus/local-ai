@@ -100,11 +100,25 @@ function Show-Sample {
     Write-Host ''
     Write-Host "$stamp  total dedicated: $totalMb MB ($([math]::Round($totalMb / 1024, 2)) GB)$Tag"
 
-    # 16 GB card. Report headroom against that, and say so, rather than implying
-    # the figure was read from the hardware.
-    $cardMb    = 16384
+    # 16304 MiB, not the 16384 a "16 GB card" implies. Read from the card on
+    # 26 Aug 2026 via llama.cpp's --list-devices, which asks Vulkan rather than
+    # rounding the marketing figure. The old value made every headroom reading
+    # 80 MiB optimistic.
+    $cardMb    = 16304
     $headroom  = [math]::Round(($cardMb - $totalMb) / 1024, 2)
-    Write-Host "assuming a 16384 MB card, headroom: $headroom GB"
+    Write-Host "against a 16304 MiB card, headroom: $headroom GiB"
+
+    # These counters and Vulkan's own heap query disagree, and the gap is large
+    # enough to change a model decision. On 26 Aug the counters said 4237.5 MiB
+    # in use, so 12066 MiB free, while Vulkan reported 15416 MiB free. Windows
+    # WDDM lets the compositor's and the browsers' allocations be evicted to
+    # system RAM under pressure, so Vulkan reports what a new process could
+    # claim, and this reports what is currently resident. Neither is wrong.
+    #
+    # Settled 26 Aug 2026 by loading a model. Qwen3.5-9B Q6_K took these
+    # counters from 4538.9 to 12409.2 MiB, a rise of 7870 MiB against a
+    # 7787.5 MiB llama-server allocation. The counters were measuring the
+    # right thing. Plan against this figure, not against Vulkan's.
 
     if ($ByProcess) {
         $rows | Where-Object { $_.MB -ge 1 } | Format-Table -AutoSize
