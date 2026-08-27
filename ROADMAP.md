@@ -70,7 +70,7 @@ that audience has almost nothing written for it, and the `-dev Vulkan0` and
 `.gitignore` is the control, it is already written, and its reasoning is inline.
 None of this is a manual step at release time.
 
-- Recorded sessions, `bench/results/*.jsonl`. A proxy log holds every tool call,
+- Recorded sessions, `*.jsonl` at any depth. A proxy log holds every tool call,
   every file the tools handed back, and the absolute path each came from. The
   scored summary travels. The log stays on the machine that recorded it.
 - Model weights and binaries.
@@ -273,11 +273,23 @@ proves the arm that cannot be proved at home. And the clean-tree step was proved
 both ways before being trusted: exit 1 against a planted change, exit 0 after
 restoring it, so it is not a check that can only ever pass.
 
-**W11. Give `serve/` its own README for the proxy and scorer.** They are the most
-novel thing here and are currently documented as a section of the root README,
-under a heading about one machine. A quickstart that does not assume Claude Code
-gets most of the benefit of extracting them into a separate repo, at a fraction
-of the cost, and makes that extraction easy later if it turns out to be wanted.
+**W11. Give `serve/` its own README for the proxy and scorer. Done.** They are the
+most novel thing here and were documented as a section of the root README, under
+a heading about one machine. A quickstart that does not assume Claude Code gets
+most of the benefit of extracting them into a separate repo, at a fraction of the
+cost, and makes that extraction easy later if it turns out to be wanted.
+
+Writing it found three things the code was wrong about rather than the prose.
+`bench/node22.sh` changes to the repository root before executing its argument,
+so every documented path has to be root-relative and the first draft's were not.
+`run-live-session.sh` still carried a header comment requiring a `/localrun/`
+segment in the work directory, a constraint the scorer dropped when it started
+deriving its prefix from `--dir`. And `.gitignore` covered session logs only
+under `bench/results/`, while the quickstart tells the reader to write
+`session.jsonl` at the repository root, where nothing ignored it. That last one
+is the whole privacy control failing at exactly the path the documentation
+recommends. It now ignores `*.jsonl` at any depth, proved both ways: three paths
+ignored, the dated result baseline still tracked.
 
 **W12. Put one copy-paste bench command against an arbitrary endpoint in the
 first screen of `README.md`. Done.** A "Five minutes" section with the bench
@@ -295,8 +307,7 @@ the opposite of what the rest of the repo argues.
 
 ### Sizing
 
-W1 to W4 and W6 to W9, W12 and W13 are done. W10 and W11 are about two hours.
-W5 is the owner's.
+Everything except W5 is done. W5 is the owner's.
 
 Original estimate, kept because it held: W1 and W2 about ninety minutes, the
 README pass roughly an hour, W10 and W11 about two hours, W3 and W4 minutes.

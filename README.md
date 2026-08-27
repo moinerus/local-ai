@@ -217,7 +217,12 @@ asked for the right thing and got nothing. It exits 2 on a log holding no
 completed turns, because reporting no discrepancies from an empty record is the
 exact failure the whole exercise is about.
 
-Session logs are not committed. See the note in `.gitignore`.
+Session logs are not committed. `.gitignore` drops `*.jsonl` at any depth, and
+the reasoning is inline there.
+
+[`serve/README.md`](serve/README.md) covers the proxy and the scorer on their
+own, for a reader who wants them in front of some other agent and does not care
+about this machine.
 
 Proved by `serve/test/prove-proxy.js`, 12 arms against a stub upstream with no
 model involved, and `serve/test/mutate-proxy.sh`, 12 mutations each required to

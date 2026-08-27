@@ -25,7 +25,12 @@ bench/results/*.csv
 # from. The first one recorded here carried the path of a private working
 # directory in six of its lines. A session log stays on the machine that
 # recorded it, and the scored summary is what travels.
-bench/results/*.jsonl
+#
+# Any depth, not just bench/results/. This used to name that one directory,
+# while serve/README.md told the reader to run the recorder from the repository
+# root and write session.jsonl there, which nothing ignored. The rule has to
+# cover wherever the documented commands actually put the file.
+*.jsonl
 
 # Secrets and local overrides
 .env

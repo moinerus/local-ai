@@ -19,8 +19,9 @@
 #   FIXTURE_NAME=localrun-long ./serve/run-live-session.sh [work-dir]
 #
 # A fixture may carry its own TASK.md and TOOLS file; without them the short
-# fixture's built-in task and tool list are used. The work dir must contain a
-# /localrun/ path segment, because the scorer normalises paths on it.
+# fixture's built-in task and tool list are used. The work dir can be named
+# anything: the scorer derives its path prefix from --dir rather than matching a
+# literal /localrun/, which is what it used to do.
 #
 # Exit 0 the account matched the record, 1 it did not, 2 the run could not
 # happen. The scorer's exit code is what this returns.
