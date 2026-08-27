@@ -213,9 +213,12 @@ different licence. The guard now exempts `LICENSE`, `LICENCE`, `COPYING` and
 `NOTICE` by filename, proved both ways: the licence writes, and the same phrase
 in a file that is not a licence is still blocked.
 
-**W4. Add a scope paragraph to the top of `README.md`.** One machine, one day,
-three models, and the numbers are readings rather than a specification. Without
-it the tables read as general claims about these models, which they are not.
+**W4. Add a scope paragraph to the top of `README.md`. Done**, as a "Scope of
+the numbers" section rather than a paragraph, and paired with W13. It says one
+card over two days, three models, and that the desktop's own memory use moved by
+more than 3 GB while the figures were being taken. It closes on the line that
+does the work: the tools are the reusable part, and the tables are evidence that
+the tools work.
 
 **W5. Flip visibility, having re-run F1 and F2 against the working tree.** The
 owner's call, and no session does it on the owner's behalf.
@@ -230,20 +233,26 @@ unchanged on this machine and derives the repo root correctly when invoked from
 another directory, and with `NVM_DIR` and `HOME` pointed at nothing it exits 2
 and says what to set.
 
-**W7. State the prerequisites, which appear nowhere.** Node 22, `python3` for the
-three code tasks, and any OpenAI-compatible endpoint. The PowerShell scripts are
-optional and serve only the AMD-on-Windows path.
+**W7. State the prerequisites, which appeared nowhere. Done.** A "What you need"
+table with a row per use: the harness, its three executing code tasks, the proxy
+and scorer, a live recorded session, and the launch scripts. It also says that
+`LLAMA_EXE` and `MODEL_DIR` are read by the launch scripts and by nothing else,
+which is the question a reader would otherwise have to answer by grepping.
 
-**W8. Split the layout table into what runs anywhere and what is this machine.**
-One column currently holds a Windows-only PowerShell launcher and a
-platform-agnostic Node harness, which is what hides W7 from a reader.
+**W8. Split the layout table into what runs anywhere and what is this machine.
+Done.** One table held a Windows-only PowerShell launcher beside a
+platform-agnostic Node harness, which is what hid W7 from a reader. Two tables
+now, and the portable one comes first. `tasks-twins.js`, `localrun-long/` and
+`status.ps1` were missing from the old table and are in.
 
 ### Useful
 
-**W9. Reorder `README.md` for a reader who has never seen the machine.** What
-this is, what you need, run the bench in five minutes, then the findings, then
-the machine-specific launchers last. The order today is machine, layout,
-measurements, and the runnable part sits below the tables.
+**W9. Reorder `README.md` for a reader who has never seen the machine. Done.**
+The order was machine, layout, measurements, with the runnable part below the
+tables. It is now: what the two tools are and that neither is AMD or Windows
+specific, scope of the numbers, what you need, five minutes, layout in two
+tables, the machine, then the readings. The opening paragraph no longer leads
+with a card nobody else owns.
 
 **W10. Add CI: a workflow running the four proof suites on push.**
 `prove-scorer`, `prove-tools`, `prove-refusal` and `prove-proxy` on
@@ -259,18 +268,27 @@ gets most of the benefit of extracting them into a separate repo, at a fraction
 of the cost, and makes that extraction easy later if it turns out to be wanted.
 
 **W12. Put one copy-paste bench command against an arbitrary endpoint in the
-first screen of `README.md`.** `bench/README.md` has one. The root README does
-not, and the root README is what a visitor reads.
+first screen of `README.md`. Done.** A "Five minutes" section with the bench
+command and the proxy pair, and the default ports for llama.cpp, Ollama and
+vLLM so `--url` is obvious. The command was run rather than typed: against a
+closed port it self-tests, reports the checker proved able to fail, then errors
+on the connection, which is the documented behaviour and proves the invocation
+form is right.
 
-**W13. Head the measurement tables with what they are.** As written they read as
-claims about these models rather than readings from one card on one day, which
-is the opposite of what the rest of the repo argues.
+**W13. Head the measurement tables with what they are. Done.** The heading is
+now "Readings from this machine, 26 Aug 2026" rather than "Measured on this
+machine", and W4's scope section sits above it. As written before, the tables
+read as claims about these models rather than readings from one card, which is
+the opposite of what the rest of the repo argues.
 
 ### Sizing
 
-W1, W2 and W6 are done. W7 to W9, W12 and W13 are one README pass of roughly an
-hour. W10 and W11 are about two hours. W3 and W4 are minutes. Everything except
-W5 can be done without the owner.
+W1 to W4 and W6 to W9, W12 and W13 are done. W10 and W11 are about two hours.
+W5 is the owner's.
+
+Original estimate, kept because it held: W1 and W2 about ninety minutes, the
+README pass roughly an hour, W10 and W11 about two hours, W3 and W4 minutes.
+Everything except W5 can be done without the owner.
 
 ## Do not
 

@@ -1,12 +1,103 @@
 # local-ai
 
-Running open-weight language models locally on a Windows desktop with an AMD
-GPU, fully offline. Launch scripts, runtime config and benchmarks.
+Two tools for measuring a local language model, and the launch scripts and
+readings for one AMD desktop.
 
-Working since 26 Aug 2026. llama.cpp b10631 serves Qwen3.5-9B Q6_K on Vulkan,
-and both consumers reach it over loopback.
+`bench/` scores a model on a fixed task set at more than one context depth, and
+refuses to run if any of its own checkers cannot fail. `serve/record-proxy.js`
+sits between a coding agent and the model, records every tool call and every
+result, and `bench/score-session.js` then reads the model's account of the
+session against that record rather than believing it.
 
-## Target machine
+**Neither of those is AMD-specific or Windows-specific.** The harness talks to
+any OpenAI-compatible endpoint and the proxy to any Anthropic-compatible one.
+Ollama, vLLM, LM Studio or llama.cpp on any hardware all work as they are. The
+PowerShell under `serve/` is the part that is not portable: it launches
+llama.cpp on a Radeon RX 9070 XT under Windows.
+
+## Scope of the numbers
+
+Every measurement here is a reading from one card over two days, not a
+specification. Three models, one machine, and the desktop's own video memory use
+moved by more than 3 GB inside a single working day while they were being taken.
+They are recorded because decisions were made on them and because the arithmetic
+those decisions started from turned out wrong in four separate places. They are
+not claims about these models in general, and a second machine would produce
+different figures.
+
+The tools are the reusable part. The tables are evidence that the tools work.
+
+## What you need
+
+| For | Requirements |
+| --- | --- |
+| The benchmark harness | Node 22, and any OpenAI-compatible endpoint |
+| Its three code tasks | `python3` on PATH, or pass `--no-exec` to skip them |
+| The recording proxy and scorer | Node 22, and a client speaking the Anthropic API |
+| A live recorded session | Those, plus Claude Code |
+| The launch scripts | Windows, PowerShell, a llama.cpp build, and GGUF weights |
+
+`LLAMA_EXE` and `MODEL_DIR` are read by the launch scripts and by nothing else.
+Copy `.env.example` if you use them.
+
+## Five minutes
+
+Score a model on the task set. Point `--url` at whatever you already run:
+llama.cpp defaults to 8080, Ollama to 11434, vLLM to 8000.
+
+```bash
+./bench/node22.sh bench/run-tasks.js --url http://127.0.0.1:8080 --label my-model
+```
+
+Eight text tasks and three tool-use tasks, three repetitions each, at two
+context depths. Every checker is driven with a known-good and a known-bad answer
+before any model is called, and the run stops with exit 2 if a bad answer scores
+a pass. `bench/README.md` has the options and what each task tests.
+
+Then watch a real session and score its account of itself against the wire:
+
+```bash
+./bench/node22.sh serve/record-proxy.js --port 8081 --out session.jsonl
+# point your agent at http://127.0.0.1:8081, let it work, then:
+./bench/node22.sh bench/score-session.js session.jsonl --baseline <md5 list> --dir <work dir>
+```
+
+## Layout
+
+Runs anywhere, given an endpoint:
+
+| Path | What |
+| --- | --- |
+| `bench/run-tasks.js` | The task set, scored mechanically at more than one context depth. See `bench/README.md` |
+| `bench/tasks.js` | The eight text tasks. Each carries a good and a bad fixture the harness drives every checker with before calling any model |
+| `bench/tasks-tools.js` | The tool-use class, scored against the tool layer's record rather than against what the model says it did |
+| `bench/tasks-twins.js` | Identifier-renamed twins of the textbook tasks, for detecting recall of a canonical exercise |
+| `bench/sandbox.js` | The in-memory filesystem offered to a model as tools, and the log of every call |
+| `bench/summarise.js` | Splits a results file by task class, which the console summary does not |
+| `bench/node22.sh` | Runs a bench script under Node 22. Resolves one rather than pinning a version |
+| `bench/test/` | Proofs that the checkers can go red, plus a mutation run requiring each to be killed by its own named arm |
+| `serve/record-proxy.js` | Sits between the agent and the model and records every tool call, every tool result and the model's own prose. The witness for a live session |
+| `serve/test/` | Proofs for the proxy, plus a mutation run requiring each to be killed by its own named arm |
+| `bench/score-session.js` | Scores a session's account of itself against the proxy log and against what changed on disk |
+| `serve/run-live-session.sh` | Runs one recorded session end to end against a fixture copy, with the fixture's own bug as the positive control |
+| `serve/fixtures/localrun/` | The short fixture: a real off-by-one bug, a helper needing no change, and a decoy report from another day |
+| `serve/fixtures/localrun-long/` | The long fixture: four modules, a 4,000 line log, a project skill, and a step requiring a subagent |
+| `bench/probes/` | One-off scripts that answered a question the scored set could not, kept because a finding whose method is not on disk cannot be checked later |
+| `ROADMAP.md` | The plan for taking this repo public, and why a model recommender is not on it |
+
+Windows, AMD and llama.cpp specific:
+
+| Path | What |
+| --- | --- |
+| `serve/gptoss.ps1` | Starts llama-server on gpt-oss-20b, pinned to the discrete card. The faster model, and the one that does not fit |
+| `serve/qwen.ps1` | Starts llama-server on Qwen3.5-9B, pinned to the discrete card. `-Reasoning off` suppresses the thinking block |
+| `serve/qwen3coder.ps1` | Starts llama-server on Qwen3-Coder-30B-A3B with the sparse experts held in system RAM |
+| `serve/qwen3.5-chat-template.jinja` | The model's chat template, one branch patched |
+| `serve/claude-local.sh` | Starts Claude Code in WSL against the local endpoint |
+| `bench/vram.ps1` | Dedicated video memory per process, grouped by name, with headroom |
+| `serve/status.ps1` | Reports whether the two local servers are listening. Written by the local 9B and kept as it came, verified on both arms, with the two things a reviewer would change left in on purpose |
+
+## The machine these numbers came from
 
 | Part | Spec |
 | --- | --- |
@@ -15,35 +106,10 @@ and both consumers reach it over loopback.
 | OS | Windows 11 Pro |
 
 AMD, so the runtime is Vulkan or ROCm, never CUDA. Vulkan is faster on decode
-on RDNA4 and is already proven on this machine by a resident whisper.cpp server
-built with `-DGGML_VULKAN=ON`.
+on RDNA4 and was already proven here by a resident whisper.cpp server built with
+`-DGGML_VULKAN=ON`.
 
-## Layout
-
-| Path | What |
-| --- | --- |
-| `ROADMAP.md` | The plan for taking this repo public: what is publishable, what stays out, and why a model recommender is not on the list |
-| `bench/vram.ps1` | Dedicated VRAM per process, grouped by name, with headroom |
-| `bench/run-tasks.js` | A fixed task set scored mechanically against a local endpoint, at more than one context depth. See `bench/README.md` |
-| `bench/tasks.js` | The eight text tasks. Each carries a good and a bad fixture that the harness drives every checker with before calling any model |
-| `bench/tasks-tools.js` | The tool-use class, scored against the tool layer's record rather than against what the model says it did |
-| `bench/sandbox.js` | The in-memory filesystem offered to a model as tools, and the log of every call |
-| `bench/summarise.js` | Splits a results file by task class, which the console summary does not |
-| `bench/node22.sh` | Runs a bench script under the right Node. A bare `node` here resolves to 12.22.9 |
-| `bench/test/` | Proofs that the checkers can go red, plus a mutation run requiring each to be killed by its own named arm |
-| `serve/gptoss.ps1` | Starts llama-server on gpt-oss-20b, pinned to the discrete card. The faster model, and the one that does not fit |
-| `serve/qwen.ps1` | Starts llama-server on Qwen3.5-9B, pinned to the discrete card. `-Reasoning off` suppresses the thinking block |
-| `serve/qwen3coder.ps1` | Starts llama-server on Qwen3-Coder-30B-A3B with the sparse experts held in system RAM |
-| `serve/qwen3.5-chat-template.jinja` | The model's chat template, one branch patched |
-| `serve/claude-local.sh` | Starts Claude Code in WSL against the local endpoint |
-| `serve/record-proxy.js` | Sits between Claude Code and llama-server and records every tool call, every tool result and the model's own prose. The witness for a live session |
-| `serve/test/` | Proofs for the proxy, plus a mutation run requiring each to be killed by its own named arm |
-| `bench/score-session.js` | Scores a live session's account of itself against the proxy log and against what changed on disk |
-| `bench/probes/` | One-off scripts that answered a question the scored set could not, kept because a finding whose method is not on disk cannot be checked later |
-| `serve/run-live-session.sh` | Runs one recorded session end to end against a fixture copy, with the fixture's own bug as the positive control |
-| `serve/fixtures/localrun/` | The fixture: a real off-by-one bug, a helper needing no change, and a decoy report from another day |
-
-## Measured on this machine, 26 Aug 2026
+## Readings from this machine, 26 Aug 2026
 
 Three models, all measured on the same card on the same day with the resident
 whisper server up.
@@ -179,7 +245,8 @@ looks like it worked.
 
 ## Status
 
-The endpoint works and Claude Code has run against it end to end.
+Working since 26 Aug 2026. llama.cpp b10631 serves Qwen3.5-9B Q6_K on Vulkan at
+128k, and Claude Code has run against it end to end from WSL.
 
 Three models are measured on a fixed task set, and a tool-use class was added
 on 26 Aug 2026 after a live session where the lane reported writing a file to a
