@@ -205,7 +205,13 @@ repository was built to catch, caught by the instrument rather than by someone
 noticing, on the fourth recorded session and the first one where it happened.
 A clean pass would have proved the chain runs. This proves it still reports.
 
-**W3. Add a licence.** MIT unless there is a reason not to.
+**W3. Add a licence. Done.** MIT, copyright 2026. Worth recording that writing
+it needed a change elsewhere: the prose guard on this machine flags "in
+connection with" as a vague-connection tell, which is a phrase the MIT text
+contains, and rewording a standard licence to satisfy a prose check makes it a
+different licence. The guard now exempts `LICENSE`, `LICENCE`, `COPYING` and
+`NOTICE` by filename, proved both ways: the licence writes, and the same phrase
+in a file that is not a licence is still blocked.
 
 **W4. Add a scope paragraph to the top of `README.md`.** One machine, one day,
 three models, and the numbers are readings rather than a specification. Without
