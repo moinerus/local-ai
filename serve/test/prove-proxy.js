@@ -76,32 +76,66 @@ const sse = (events) => events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join
   const proxyPort = await listen(proxy);
   const base = `http://127.0.0.1:${proxyPort}`;
 
-  // Reads back only the entries written since the marker, so one arm cannot
-  // pass on another arm's log line.
-  let readSoFar = 0;
-  const newEntries = () => {
-    const all = fs
+  const readAll = () => {
+    if (!fs.existsSync(logPath)) return [];
+    return fs
       .readFileSync(logPath, 'utf8')
       .split('\n')
       .filter((l) => l.trim() !== '')
       .map((l) => JSON.parse(l));
+  };
+
+  // Reads back only the entries written since the marker, so one arm cannot
+  // pass on another arm's log line.
+  let readSoFar = 0;
+  const newEntries = () => {
+    const all = readAll();
     const fresh = all.slice(readSoFar);
     readSoFar = all.length;
     return fresh;
   };
 
-  const post = async (body, pathname = '/v1/messages') => {
+  // Wait until the entries have actually reached the file.
+  //
+  // This used to be two turns of the event loop, on the reasoning that the log
+  // line is written on the upstream 'end' event which can land just after the
+  // client's promise settles. That was a guess about timing dressed as a fact
+  // about ordering, and it was wrong twice over: the proxy writes through a
+  // buffered stream, so no number of event-loop turns tells you the bytes have
+  // reached disk. It passed on the machine it was written on and failed the
+  // first time it ran anywhere else. On a CI runner three arms went red, and
+  // the shape says what happened: one arm saw no entry, the next saw the late
+  // one plus its own, and a third read prose belonging to the arm before it.
+  //
+  // Poll the file, which is what the scorer reads anyway, with a deadline that
+  // fails loudly rather than hanging.
+  const WAIT_MS = 5000;
+  const waitForNew = async (expected, label) => {
+    const deadline = Date.now() + WAIT_MS;
+    for (;;) {
+      const seen = readAll().length - readSoFar;
+      if (seen >= expected) return;
+      if (Date.now() > deadline) {
+        // Named from the constant rather than typed into the sentence. The
+        // control that proved this branch fires shortened the deadline to
+        // 300ms and the message still claimed five seconds, which would have
+        // sent the next reader looking in the wrong place.
+        throw new Error(
+          `timed out after ${WAIT_MS}ms waiting for ${expected} new log entr(ies) from ${label}, saw ${seen}`
+        );
+      }
+      await new Promise((r) => setTimeout(r, 5));
+    }
+  };
+
+  const post = async (body, pathname = '/v1/messages', expectEntries = 1) => {
     const res = await fetch(base + pathname, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
     });
     const text = await res.text();
-    // The log line is written on the upstream 'end' event, which can land just
-    // after the client's promise settles. One turn of the event loop is enough
-    // and avoids a sleep.
-    await new Promise((r) => setImmediate(r));
-    await new Promise((r) => setImmediate(r));
+    if (expectEntries > 0) await waitForNew(expectEntries, pathname);
     return { res, text };
   };
 
@@ -274,8 +308,9 @@ const sse = (events) => events.map((e) => `data: ${JSON.stringify(e)}\n\n`).join
       body: JSON.stringify({ messages: [] }),
     });
     await res.text();
-    await new Promise((r) => setImmediate(r));
-    await new Promise((r) => setImmediate(r));
+    // Same reasoning as waitForNew above: this arm writes through a second
+    // proxy's stream into the same file, so it has the same race.
+    await waitForNew(1, 'the dead-upstream proxy');
     await dead.close();
     const e = newEntries();
     if (res.status !== 502) return `returned ${res.status} rather than 502`;
