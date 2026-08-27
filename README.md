@@ -22,6 +22,7 @@ built with `-DGGML_VULKAN=ON`.
 
 | Path | What |
 | --- | --- |
+| `ROADMAP.md` | The plan for taking this repo public: what is publishable, what stays out, and why a model recommender is not on the list |
 | `bench/vram.ps1` | Dedicated VRAM per process, grouped by name, with headroom |
 | `bench/run-tasks.js` | A fixed task set scored mechanically against a local endpoint, at more than one context depth. See `bench/README.md` |
 | `bench/tasks.js` | The eight text tasks. Each carries a good and a bad fixture that the harness drives every checker with before calling any model |
