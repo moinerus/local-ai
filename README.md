@@ -1,5 +1,7 @@
 # local-ai
 
+[![proofs](https://github.com/moinerus/local-ai/actions/workflows/proofs.yml/badge.svg)](https://github.com/moinerus/local-ai/actions/workflows/proofs.yml)
+
 Two tools for measuring a local language model, and the launch scripts and
 readings for one AMD desktop.
 
@@ -83,6 +85,7 @@ Runs anywhere, given an endpoint:
 | `serve/fixtures/localrun/` | The short fixture: a real off-by-one bug, a helper needing no change, and a decoy report from another day |
 | `serve/fixtures/localrun-long/` | The long fixture: four modules, a 4,000 line log, a project skill, and a step requiring a subagent |
 | `bench/probes/` | One-off scripts that answered a question the scored set could not, kept because a finding whose method is not on disk cannot be checked later |
+| `.github/workflows/proofs.yml` | Runs the four proof suites and both mutation runs on every push, all offline, so the badge above is this repo's own argument made checkable without cloning it |
 | `ROADMAP.md` | The plan for taking this repo public, and why a model recommender is not on it |
 
 Windows, AMD and llama.cpp specific:

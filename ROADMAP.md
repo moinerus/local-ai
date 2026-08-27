@@ -254,12 +254,24 @@ specific, scope of the numbers, what you need, five minutes, layout in two
 tables, the machine, then the readings. The opening paragraph no longer leads
 with a card nobody else owns.
 
-**W10. Add CI: a workflow running the four proof suites on push.**
-`prove-scorer`, `prove-tools`, `prove-refusal` and `prove-proxy` on
-`ubuntu-latest` with Node 22. All four run offline; `prove-proxy` starts its own
-stub upstream rather than reaching a model, which was checked rather than
-assumed. Highest value per hour on this list, for the reason under **What decides
-whether this is useful** above.
+**W10. Add CI: a workflow running the four proof suites on push. Done.**
+`.github/workflows/proofs.yml`, ten steps on `ubuntu-latest` with Node 22:
+`prove-scorer`, `prove-tools`, `prove-refusal`, `prove-proxy`, both mutation
+runs, and a final `git diff --exit-code` asserting every mutation restored its
+source. All offline, `prove-proxy` starting its own stub upstream rather than
+reaching a model. A badge is in the README, which is the point: this repo's
+argument is that its checkers were proved able to go red, and until now a reader
+had to clone and run everything to see it.
+
+Three things this turned up. **The five shell scripts were not executable in
+git**, all mode 100644, because the authoring machine is Windows and does not
+store the bit, so `./bench/node22.sh` in the README quickstart would have failed
+on any fresh Linux or macOS clone. Now 100755, and `core.filemode false` here
+means it costs no local diff noise. **CI is the only place `node22.sh`'s PATH
+fallback gets exercised**, since this machine always has nvm, so the runner
+proves the arm that cannot be proved at home. And the clean-tree step was proved
+both ways before being trusted: exit 1 against a planted change, exit 0 after
+restoring it, so it is not a check that can only ever pass.
 
 **W11. Give `serve/` its own README for the proxy and scorer.** They are the most
 novel thing here and are currently documented as a section of the root README,

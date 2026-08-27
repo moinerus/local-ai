@@ -1,0 +1,59 @@
+name: proofs
+
+# The argument this repository makes is that its checkers were proved able to
+# go red. A reader cannot see that without running everything, and most will
+# not, so the proof runs here on every push.
+#
+# Nothing in this job needs a GPU, a downloaded weight file or an endpoint.
+# Every suite is offline: prove-proxy starts its own stub upstream rather than
+# reaching a model, and the mutation runs edit a source file and restore it.
+#
+# It also exercises bench/node22.sh on a machine with no nvm at all, which is
+# the fallback arm that cannot be tested on the machine this was written on.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  proofs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: node22.sh resolves a Node with no nvm present
+        run: ./bench/node22.sh --version
+
+      # Each of these asserts that a checker rejects a known-bad answer as well
+      # as accepting a known-good one. A suite where every arm passes and none
+      # could have failed is not evidence.
+      - name: the session scorer can go red
+        run: ./bench/node22.sh bench/test/prove-scorer.js
+
+      - name: the tool-use checkers can go red
+        run: ./bench/node22.sh bench/test/prove-tools.js
+
+      - name: the harness refuses a checker that cannot fail
+        run: ./bench/node22.sh bench/test/prove-refusal.js
+
+      - name: the proxy records what crosses it
+        run: ./bench/node22.sh serve/test/prove-proxy.js
+
+      # The stronger half. Each disables one check and requires the arm written
+      # for that check to be the arm that fails, by name. It has already earned
+      # itself once: an arm was passing because a second, redundant guard fired
+      # on the same input, so disabling the guard it was written for changed
+      # nothing.
+      - name: every tool mutation is killed by its own arm
+        run: ./bench/test/mutate-tools.sh
+
+      - name: every proxy mutation is killed by its own arm
+        run: ./serve/test/mutate-proxy.sh
+
+      - name: the working tree is clean, so every mutation restored
+        run: git diff --exit-code
