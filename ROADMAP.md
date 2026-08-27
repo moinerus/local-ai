@@ -106,9 +106,31 @@ naive arithmetic shown alongside so the gap between the two is visible. It
 recommends from the machine in front of it rather than from a specification.
 Most of it is existing scripts behind one entry point. Nothing has been built.
 
+## What decides whether this is useful to anyone else
+
+**The benchmark harness and the recording proxy have nothing to do with AMD,
+Windows, Vulkan or llama.cpp, and nothing in the repo says so.** `run-tasks.js`
+takes `--url` and `--model` and speaks OpenAI-compatible HTTP. The proxy sits on
+loopback and speaks the Anthropic API. Anyone running Ollama, vLLM or LM Studio
+on any card can use both, unchanged, today. But `README.md` opens with a table
+of one specific card's specifications, and the layout table lists a Windows-only
+PowerShell launcher and a platform-agnostic Node harness in the same column, so
+a reader gets three paragraphs in and concludes none of it applies to them.
+
+That framing is the difference between an audience of people who own an
+RX 9070 XT and an audience of people who run a local model. It costs an
+afternoon. It is worth more than the rest of the list below put together, which
+is why W7 to W9 sit above the licence in priority even though the licence is
+what makes publication legal.
+
+The second thing that decides it is W10, continuous integration. This repo's
+whole argument is that its checkers were proved able to go red. A reader cannot
+see that without running everything, and most will not. A green tick per push is
+what turns the claim into evidence, and all four suites already run offline.
+
 ## Options for repo shape
 
-**O1, recommended. Flip this repo to public after A1 to A4.** The history is
+**O1, recommended. Flip this repo to public after W1 to W13.** The history is
 clean, and the findings are interlinked: a benchmark result means little without
 the memory measurement and the launch config beside it, and splitting them means
 maintaining the same machine description in more than one place.
@@ -122,7 +144,16 @@ interest. Extraction is cheap once it is wanted, and free if it never is.
 
 ## Work before flipping
 
-**A1. Replace the thirteen hardcoded paths with environment variables and add
+Three groups. Clean is what makes publication safe, portable is what makes the
+repo runnable by anyone, and useful is what makes it worth finding. They
+supersede an earlier A1 to A5 list, which is folded in as W1 to W5.
+
+Mark each one done in place as it lands, so a cold pickup can tell what is left
+without reading the diff.
+
+### Clean
+
+**W1. Replace the thirteen hardcoded paths with environment variables and add
 `.env.example`.** In full, so this needs no rediscovery:
 
 | File | Line | What |
@@ -137,27 +168,103 @@ interest. Extraction is cheap once it is wanted, and free if it never is.
 | `serve/run-live-session.sh` | 31 | `REPO=` literal |
 | `serve/test/mutate-proxy.sh` | 22 | `REPO=` literal |
 
-Proposed variables: `LLAMA_EXE` and `MODEL_DIR` for the launchers. Derive `REPO`
-from `git rev-parse --show-toplevel` rather than any literal. Resolve `NODE` by
-finding a v22 install under the nvm directory rather than pinning a patch
-version, since pinning is what makes it break on the next machine. The
-`claude-local.sh` comment should name `%USERPROFILE%\.wslconfig`, which is the
-correct instruction anyway.
+**Done.** `LLAMA_EXE` and `MODEL_DIR` for the launchers, with no invented
+default: a typed fallback would be wrong on every machine but this one, and
+would fail as a missing file rather than as an unset variable, which is the
+error that tells someone what to do. `REPO` is derived as
+`$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)` rather than from
+`git rev-parse --show-toplevel`, which is what this said first: `node22.sh`
+already used the `BASH_SOURCE` idiom for the same reason, and it works in a
+checkout that is not a git repository. `claude-local.sh` now names
+`%USERPROFILE%\.wslconfig` and prints repo-relative launcher paths.
 
-**A2. Re-run all four proof suites, both mutation runs, and one live session end
-to end after A1.** A path change is precisely the class of edit that leaves every
-offline test green while breaking the thing that actually runs, and three of the
-edits above are inside the test harness itself.
+**And `.env.example` was invisible to git, which the file list did not
+predict.** `.gitignore` carries `.env.*`, so the one file documenting the two
+variables every launcher now needs would never have been committed, and its
+absence would have read as having forgotten to write it. `!.env.example` is
+now there, proved both ways: the example is untracked and listed, and
+`.env.local` is still ignored.
 
-**A3. Add a licence.** MIT unless there is a reason not to.
+**W2. Re-run all four proof suites, both mutation runs, and one live session end
+to end after W1. Done.** A path change is precisely the class of edit that leaves
+every offline test green while breaking the thing that actually runs, and three
+of the edits above are inside the test harness itself.
 
-**A4. Add a scope paragraph to the top of `README.md`.** One machine, one day,
+`prove-scorer` 13 arms, `prove-tools` all arms, `prove-refusal` all arms,
+`prove-proxy` all arms. `mutate-tools` 6 mutations and `mutate-proxy` 12, each
+killed by its own named arm, both restoring their source. Then a real session:
+llama-server started through the rewritten launcher and served the model out of
+`MODEL_DIR`, the recorder took it on 8081, and `run-live-session.sh` copied the
+fixture, ran its positive control, drove the session and ran the test after.
+
+The session itself failed, and that is the stronger result. The model wrote a
+report claiming it had fixed `src/parser.py`, the test still failed, and the
+scorer said why: `MISMATCH written: claimed ["src/parser.py"] which the record
+does not show`. It never made the edit. That is the original failure this whole
+repository was built to catch, caught by the instrument rather than by someone
+noticing, on the fourth recorded session and the first one where it happened.
+A clean pass would have proved the chain runs. This proves it still reports.
+
+**W3. Add a licence.** MIT unless there is a reason not to.
+
+**W4. Add a scope paragraph to the top of `README.md`.** One machine, one day,
 three models, and the numbers are readings rather than a specification. Without
 it the tables read as general claims about these models, which they are not.
 
-**A5. Flip visibility, having re-run F1 and F2 against the working tree.**
+**W5. Flip visibility, having re-run F1 and F2 against the working tree.** The
+owner's call, and no session does it on the owner's behalf.
 
-A1 and A2 together are about an hour. A3 and A4 are minutes.
+### Portable
+
+**W6. Stop `bench/node22.sh` pinning an nvm patch version. Done.** It named
+`v22.20.0`. It now takes `NODE22` if set, else the highest `v22.*` under
+`NVM_DIR`, else a `node` on `PATH` that reports v22 or newer, and exits 2 with
+an instruction when there is none. Both arms were run: it resolves v22.20.0
+unchanged on this machine and derives the repo root correctly when invoked from
+another directory, and with `NVM_DIR` and `HOME` pointed at nothing it exits 2
+and says what to set.
+
+**W7. State the prerequisites, which appear nowhere.** Node 22, `python3` for the
+three code tasks, and any OpenAI-compatible endpoint. The PowerShell scripts are
+optional and serve only the AMD-on-Windows path.
+
+**W8. Split the layout table into what runs anywhere and what is this machine.**
+One column currently holds a Windows-only PowerShell launcher and a
+platform-agnostic Node harness, which is what hides W7 from a reader.
+
+### Useful
+
+**W9. Reorder `README.md` for a reader who has never seen the machine.** What
+this is, what you need, run the bench in five minutes, then the findings, then
+the machine-specific launchers last. The order today is machine, layout,
+measurements, and the runnable part sits below the tables.
+
+**W10. Add CI: a workflow running the four proof suites on push.**
+`prove-scorer`, `prove-tools`, `prove-refusal` and `prove-proxy` on
+`ubuntu-latest` with Node 22. All four run offline; `prove-proxy` starts its own
+stub upstream rather than reaching a model, which was checked rather than
+assumed. Highest value per hour on this list, for the reason under **What decides
+whether this is useful** above.
+
+**W11. Give `serve/` its own README for the proxy and scorer.** They are the most
+novel thing here and are currently documented as a section of the root README,
+under a heading about one machine. A quickstart that does not assume Claude Code
+gets most of the benefit of extracting them into a separate repo, at a fraction
+of the cost, and makes that extraction easy later if it turns out to be wanted.
+
+**W12. Put one copy-paste bench command against an arbitrary endpoint in the
+first screen of `README.md`.** `bench/README.md` has one. The root README does
+not, and the root README is what a visitor reads.
+
+**W13. Head the measurement tables with what they are.** As written they read as
+claims about these models rather than readings from one card on one day, which
+is the opposite of what the rest of the repo argues.
+
+### Sizing
+
+W1, W2 and W6 are done. W7 to W9, W12 and W13 are one README pass of roughly an
+hour. W10 and W11 are about two hours. W3 and W4 are minutes. Everything except
+W5 can be done without the owner.
 
 ## Do not
 
@@ -166,3 +273,4 @@ A1 and A2 together are about an hour. A3 and A4 are minutes.
 - Do not present the measurements as generalisable. They are one machine on one
   day, and saying so is what makes the rest of it trustworthy.
 - Do not build the recommender as a spec-sheet lookup. See R1.
+- Do not extract the proxy into its own repo before W11 has been tried. See O2.

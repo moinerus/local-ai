@@ -19,7 +19,7 @@
 # Exit 2 the harness could not run.
 set -uo pipefail
 
-REPO=/mnt/c/dev/local-ai
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$REPO/serve/record-proxy.js"
 BACKUP=$(mktemp)
 NODE22="$REPO/bench/node22.sh"

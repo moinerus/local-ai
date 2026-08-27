@@ -17,10 +17,23 @@
 # pass, and it reads exactly like a suite that cannot go red.
 set -euo pipefail
 
-NODE=/home/you/.nvm/versions/node/v22.20.0/bin/node
+# Resolve a v22 rather than pinning a patch version. The pin is what breaks
+# this on another machine, and on this one after the next nvm upgrade. NODE22
+# overrides everything if a specific binary is wanted.
+NODE="${NODE22:-}"
+if [ -z "$NODE" ]; then
+  NODE="$(ls -d "${NVM_DIR:-$HOME/.nvm}"/versions/node/v22.*/bin/node 2>/dev/null | sort -V | tail -1 || true)"
+fi
+if [ -z "$NODE" ] && command -v node >/dev/null 2>&1; then
+  case "$(node -v)" in v2[2-9].*|v[3-9][0-9].*) NODE="$(command -v node)" ;; esac
+fi
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-[ -x "$NODE" ] || { echo "node not found at $NODE" >&2; exit 2; }
+if [ -z "$NODE" ] || [ ! -x "$NODE" ]; then
+  echo "no Node 22 or newer found." >&2
+  echo "set NODE22 to a node binary, or install one under \$NVM_DIR/versions/node/v22.*" >&2
+  exit 2
+fi
 
 cd "$REPO"
 exec "$NODE" "$@"

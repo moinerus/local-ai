@@ -28,7 +28,7 @@ set -uo pipefail
 
 export PATH="${HOME}/.local/bin:${PATH}"
 
-REPO=/mnt/c/dev/local-ai
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FIXTURE="$REPO/serve/fixtures/${FIXTURE_NAME:-localrun}"
 WORK="${1:-/tmp/localrun-$$}"
 LOG="/tmp/live-session-$$.jsonl"

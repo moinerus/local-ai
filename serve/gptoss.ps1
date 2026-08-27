@@ -82,8 +82,16 @@ param(
 # PS 5.1 turns native stderr into a terminating error under Stop. Do not.
 $ErrorActionPreference = 'Continue'
 
-$Exe   = 'C:\llama.cpp\llama-server.exe'
-$Model = 'C:\models\gpt-oss-20b-MXFP4.gguf'
+# The llama-server binary and the directory holding the GGUF files come from
+# the environment, so this runs on a machine other than the one it was written
+# on. See .env.example. There is deliberately no default: a typed fallback
+# would be wrong everywhere but here, and would fail as a missing file rather
+# than as an unset variable.
+$Exe      = $env:LLAMA_EXE
+$ModelDir = $env:MODEL_DIR
+if (-not $Exe)      { Write-Error "LLAMA_EXE is not set. See .env.example."; exit 2 }
+if (-not $ModelDir) { Write-Error "MODEL_DIR is not set. See .env.example."; exit 2 }
+$Model = Join-Path $ModelDir 'gpt-oss-20b-MXFP4.gguf'
 
 if (-not (Test-Path $Exe))   { Write-Error "llama-server missing: $Exe"; exit 2 }
 if (-not (Test-Path $Model)) { Write-Error "model missing: $Model";      exit 2 }

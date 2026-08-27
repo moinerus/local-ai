@@ -35,8 +35,9 @@ MODELS_JSON="$(curl -sf "${BASE}/v1/models" 2>/dev/null || true)"
 if [ -z "$MODELS_JSON" ]; then
   echo "nothing answering at ${BASE}/v1/models" >&2
   echo "start one of these on Windows:" >&2
-  echo "  C:\\dev\\local-ai\\serve\\gptoss.ps1   gpt-oss-20b, the faster model" >&2
-  echo "  C:\\dev\\local-ai\\serve\\qwen.ps1     Qwen3.5-9B Q6_K" >&2
+  echo "  serve\\gptoss.ps1   gpt-oss-20b, the faster model" >&2
+  echo "  serve\\qwen.ps1     Qwen3.5-9B Q6_K" >&2
+  echo "run one of those from PowerShell, in the repo root, on the Windows side." >&2
   echo "if one is already running, check .wslconfig has networkingMode=mirrored" >&2
   exit 2
 fi

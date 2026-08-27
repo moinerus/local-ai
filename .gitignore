@@ -33,6 +33,12 @@ bench/results/*.jsonl
 config/local.*
 *.key
 
+# The template is the exception, and it has to be stated, because `.env.*`
+# above matches it. Without this line the one file that documents the two
+# variables the launchers need is invisible to git, and the omission looks
+# exactly like having forgotten to write it.
+!.env.example
+
 # Editor and OS
 .vscode/
 .idea/
