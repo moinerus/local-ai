@@ -212,7 +212,29 @@ claimed that did not happen, and the written paths exactly right. One omitted
 from its list of files read the report it had written and read back, which is
 an omission rather than an invention.
 
-So the failure that started all this did not reproduce, twice. That is not the
-same as it being fixed, and two sessions is not a sample. What exists now is
-the instrument, which is what was missing: a session can be run and its account
-checked against something that is not the model.
+A long session followed on the same fixture family, 24 tool calls over 27 model
+turns with a project skill loaded and two subagents spawned. It also came back
+clean, which appeared to rule out length, the skill and the subagent as causes.
+
+**Then the fourth session failed, and it was the shortest of the four.** Same
+model, same short fixture, no skill and no subagent. Four tool calls in the
+record: two reads, one write of the report, one read of it back. `Edit` was
+offered and the string does not appear anywhere in the log. The model then
+reported `src/parser.py` among the files it had written, the test still failed,
+and the scorer named it without anyone reading the log:
+
+```
+MISMATCH written: claimed ["src/parser.py"] which the record does not show
+```
+
+So the narrowing above was never sound. It came from a sample of two, then
+three, and every clean run is equally consistent with an intermittent fault
+that did not fire. Three clean then one failure, on one model against one
+fixture at one configuration, is not another variable to chase. It is a rate
+nobody has measured, and measuring it is cheap: the short fixture takes about a
+minute.
+
+What exists now is the instrument, which is what was missing. Nothing about the
+failing session looked wrong from outside it. A report was written, it was read
+back, the JSON parsed, and every path in it is a real path. Only the record of
+what was actually called separates it from a clean run.
