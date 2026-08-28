@@ -15,7 +15,8 @@ fixtures are wholly synthetic: the decoy report describes a made-up sorting bug
 in a file that exists only inside the fixture. The control for that scan fired,
 so the zero is a real zero rather than a broken query.
 
-**F2. The history is clean.** No session log, no `.log`, no `.gguf` and no
+**F2. No forbidden file has ever been committed. Narrower than it first read:
+see F4.** No session log, no `.log`, no `.gguf` and no
 `.env` has ever been committed on any branch. `.gitignore` landed early enough.
 The one deleted file, `serve/claude-local.ps1`, sets `ANTHROPIC_AUTH_TOKEN` to
 `local` against a keyless server, which is a placeholder rather than a secret.
@@ -31,6 +32,38 @@ anyone else.
 Re-run F1 and F2 against the working tree immediately before flipping, never
 against the last commit. A scan of a commit says nothing about what is staged
 beside it.
+
+**F4. The history carried what F2 never tested for, and it has been rewritten.**
+Re-running F1 and F2 on 28 August 2026 found both clean on their own terms: no
+employer or project vocabulary anywhere in the tree or in any commit message, no
+credential shapes, no forbidden file type ever committed. But F2 tested which
+files had been committed, not what was inside them. Nine of the twenty-six
+commits held absolute home paths, which W1 had removed from the tip and nothing
+had removed from the history behind it. Two `.pyc` files committed at one commit
+and removed at the next carried the same path in their bytecode, where no text
+scan would have seen it.
+
+Every commit was rewritten. The path forms map onto the ones `.env.example`
+already documents, so the history now agrees with the template rather than
+inventing a third convention. The two bytecode files went, and so did a stray
+file created by a mangled shell redirect, which took its commit with it and left
+twenty-five.
+
+The filter was proved before it was let near the repository, on four arms
+including one requiring it to exit non-zero and name the file and line for a
+path form no rule covered. It asserts on residue after rewriting rather than
+finishing quietly, because a silent miss leaves the path in a commit nobody
+opens again.
+
+Verified after: the scan is clean across all twenty-five commits with its control
+still firing, binaries included; no `.pyc` and no stray blob is reachable; and
+the tree at the tip was `f6bb861` both before and after the rewrite, so nothing
+anyone checks out changed. All six proof suites pass. The pre-rewrite mirror is
+kept off the repository.
+
+A first name in a path was never a secret, and the licence carries the full one.
+This was done because the paths are noise in a public history rather than because
+they were dangerous.
 
 ## What goes public, ranked
 
@@ -220,8 +253,10 @@ more than 3 GB while the figures were being taken. It closes on the line that
 does the work: the tools are the reusable part, and the tables are evidence that
 the tools work.
 
-**W5. Flip visibility, having re-run F1 and F2 against the working tree.** The
-owner's call, and no session does it on the owner's behalf.
+**W5. Flip visibility.** The owner's call, and no session does it on the owner's
+behalf. F1 and F2 were re-run against the working tree on 28 August 2026 and are
+recorded above, along with F4, which is what that re-run turned up. Re-run them
+again if anything lands between then and the flip.
 
 ### Portable
 
