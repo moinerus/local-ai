@@ -40,7 +40,7 @@ per request: what the model asked for, what came back, and the model's own
 prose. `score-session.js` then reads three things and keeps them apart on
 purpose:
 
-- what the model **claimed** it read and wrote, from its final answer
+- what the model **claimed** it read and wrote, from its report
 - what the **record** shows it asked for, and which of those calls succeeded
 - what actually **changed on disk**, from a checksum baseline
 
@@ -79,9 +79,16 @@ Then score the session:
 ./bench/node22.sh bench/score-session.js session.jsonl --baseline baseline.md5 --dir work
 ```
 
-Exit 0 the account matches the record, 1 it does not, 2 the log could not be
-read or held no completed turns. That last one is deliberate: reporting no
-discrepancies from an empty record is the exact failure this exists to catch.
+Exit 0 the account matches the record, 1 it does not or no account could be
+found, 2 the log could not be read or held no completed turns. That last one is
+deliberate: reporting no discrepancies from an empty record is the exact failure
+this exists to catch.
+
+The account is the last turn whose text parses as one, not the last turn
+carrying text. A proxy left listening after a session ends records whatever
+reaches the port next, and that traffic sits behind the report in the log. When
+the account is not the last thing recorded, the scorer says which entry it came
+from.
 
 ## The whole loop against a known bug
 
