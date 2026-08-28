@@ -27,8 +27,12 @@ at more than one depth.
 ## Running it
 
 ```bash
-node bench/run-tasks.js --url http://127.0.0.1:8081 --label gpt-oss-20b --out results.json
+./bench/node22.sh bench/run-tasks.js --url http://127.0.0.1:8081 --label gpt-oss-20b --out results.json
 ```
+
+Run it from the repository root, and through `node22.sh` rather than a bare
+`node`. The wrapper resolves a Node 22 and changes to the root before executing
+its argument, so a path relative to this directory will not resolve.
 
 | Option | Default | What |
 | --- | --- | --- |

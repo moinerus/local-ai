@@ -342,11 +342,91 @@ the opposite of what the rest of the repo argues.
 
 ### Sizing
 
-Everything except W5 is done. W5 is the owner's.
+W1 to W13 are done except W5, which is the owner's.
 
 Original estimate, kept because it held: W1 and W2 about ninety minutes, the
 README pass roughly an hour, W10 and W11 about two hours, W3 and W4 minutes.
 Everything except W5 can be done without the owner.
+
+## Usable, which is not the same as releasable
+
+W1 to W13 made this repository clean, portable and provable. They did not make
+it usable, and the two were being conflated. The question that separated them,
+on 28 August 2026: what does a stranger actually do with this?
+
+**F5. Nothing here runs without setup.** The bench needs an OpenAI-compatible
+endpoint already serving a model. The proxy needs an agent already pointed at it
+and an md5 baseline the reader constructs. `run-live-session.sh` needs
+llama-server on Windows, WSL, Claude Code, and port 8081 specifically. There is
+no command in this repository that shows what it does without a GPU, a model or
+an agent, and the "Five minutes" section is not five minutes: its second command
+block carries placeholders, so it is a sketch rather than something to paste.
+
+**F6. The hook is real and it is buried.** The strongest thing here is one
+sentence: a coding agent wrote a report saying it fixed a file it never opened
+for editing, and this caught it mechanically without anyone reading the log. It
+sits at line 296 of `README.md`, under a heading about hardware, after four
+tables of video memory readings. The opening line describes the shelf rather
+than the thing on it.
+
+**F7. The scorer read the account from the wrong entry, and it is fixed.** Found
+while looking for something to build a zero-setup demo from.
+`score-session.js` took the model's report from the last log entry carrying any
+final text. A proxy left listening after a session ends records whatever reaches
+the port next, and both archived logs from 26 August carry two such entries
+behind the real account. The scorer read the last of them, could not parse it,
+and reported no account found while the account sat in the file. Neither log
+could be re-scored, and one is the evidence behind a claim in `README.md`.
+
+It now scans back for the first entry whose text parses as an account, meaning
+an object carrying `files_read` or `files_written`. A stray reply does not have
+that shape and a false account does, which is what makes selecting on shape
+safe. Where the account is not the last thing recorded, the output names the
+entry it came from.
+
+Four new arms in `prove-scorer.js`, seventeen in total. Two were run red against
+the unfixed scorer before the fix. One is the guard against over-fixing: a
+session that reported honestly and then reported falsely must still be scored on
+the later report, so scanning back must not walk past a later account to reach an
+earlier one. Independently corroborated, which is the part worth keeping: the
+archived session now scores as `omitted ["notes/2026-08-26-report.md"] which the
+record does show`, exactly what `README.md` recorded about that session from the
+live run eleven days earlier.
+
+### Work
+
+**W14. Ship a session log a stranger can score, with no model and no agent.**
+Two redacted logs under `samples/` with their baselines, one clean and one that
+mismatches, so the first command in `README.md` runs offline in about a second
+and the reader watches the tool tell them apart. Redaction is a path rewrite and
+the filter proved for F4 does it.
+
+One judgement call sits inside this. The real failing log from 27 August is gone,
+WSL cleared `/tmp`. Either construct the mismatching sample as a labelled
+fixture, which is what `bench/test/prove-scorer.js` does throughout, or capture a
+real one, which needs the runs D19 calls for anyway. Ship the constructed one
+labelled as constructed and swap in a real one when those runs happen.
+
+**W15. Rewrite the first screen of `README.md`** around F6 and the W14 command,
+and move the hardware tables below the fold.
+
+**W16. Add a mutation run for `score-session.js`.** It is the central checker in
+the repository and the only one without one. `mutate-tools.sh` and
+`mutate-proxy.sh` each require every mutation to be killed by its own named arm.
+The scorer has seventeen arms that can go red and nothing forcing each to be the
+arm that catches its own mutant. Four of the seventeen were proved by hand
+against the unfixed code on 28 August. The other thirteen have never been put
+through it.
+
+**W17. Fix `bench/README.md`. Done.** It told the reader to run
+`node bench/run-tasks.js` directly. Everything else in the repository routes
+through `bench/node22.sh`, which exists because a bare `node` here is the wrong
+version, and which changes to the repository root before executing its argument.
+Both facts are now stated next to the command.
+
+W16 is the one to do before W15, because W15 rewrites the front door around a
+claim that the checkers are proved, and the scorer is where that claim is
+thinnest.
 
 ## Do not
 
