@@ -1,0 +1,1 @@
+{"seq":1,"at":"2026-08-29T00:00:00.000Z","method":"POST","path":"/v1/messages","status":200,"shape":"anthropic","requestBytes":100,"responseBytes":100,"messages":1,"toolCalls":[{"id":"t1","name":"Write","input":{"file_path":"src/output.py"}}],"toolResults":[{"id":"t1","isError":false,"content":"written"}],"finalText":"{\"files_read\":[],\"files_written\":[\"src/output.py\"]}"}

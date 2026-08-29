@@ -2,20 +2,39 @@
 
 [![proofs](https://github.com/moinerus/local-ai/actions/workflows/proofs.yml/badge.svg)](https://github.com/moinerus/local-ai/actions/workflows/proofs.yml)
 
-Two tools for measuring a local language model, and the launch scripts and
-readings for one AMD desktop.
+A coding agent wrote a report saying it had fixed a file it never edited.
+`bench/score-session.js` caught the false account from the recorded tool calls,
+without anyone reading the session log.
 
-`bench/` scores a model on a fixed task set at more than one context depth, and
-refuses to run if any of its own checkers cannot fail. `serve/record-proxy.js`
-sits between a coding agent and the model, records every tool call and every
-result, and `bench/score-session.js` then reads the model's account of the
-session against that record rather than believing it.
+This repository holds that scorer, the recording proxy that supplies its
+evidence, a fixed local-model benchmark, and the launch scripts and readings
+for one AMD desktop.
 
-**Neither of those is AMD-specific or Windows-specific.** The harness talks to
-any OpenAI-compatible endpoint and the proxy to any Anthropic-compatible one.
+The benchmark is not AMD-specific or Windows-specific. It talks to any
+OpenAI-compatible endpoint, and the proxy accepts any Anthropic-compatible client.
 Ollama, vLLM, LM Studio or llama.cpp on any hardware all work as they are. The
 PowerShell under `serve/` is the part that is not portable: it launches
 llama.cpp on a Radeon RX 9070 XT under Windows.
+
+## Try the scorer offline
+
+No model, GPU or agent is needed. These are constructed sample records with no
+real prompt, model output or private path.
+
+The first account matches its recorded write and exits 0:
+
+```bash
+./bench/node22.sh bench/score-session.js samples/clean-account.jsonl
+```
+
+The second claims a file that was never written and exits 1:
+
+```bash
+./bench/node22.sh bench/score-session.js samples/mismatched-account.jsonl
+```
+
+The second command exits 1 and names the unsupported write. Valid JSON and a
+confident report are not evidence without the tool record.
 
 ## Scope of the numbers
 
@@ -42,7 +61,7 @@ The tools are the reusable part. The tables are evidence that the tools work.
 `LLAMA_EXE` and `MODEL_DIR` are read by the launch scripts and by nothing else.
 Copy `.env.example` if you use them.
 
-## Five minutes
+## Benchmark your endpoint
 
 Score a model on the task set. Point `--url` at whatever you already run:
 llama.cpp defaults to 8080, Ollama to 11434, vLLM to 8000.
@@ -55,14 +74,6 @@ Eight text tasks and three tool-use tasks, three repetitions each, at two
 context depths. Every checker is driven with a known-good and a known-bad answer
 before any model is called, and the run stops with exit 2 if a bad answer scores
 a pass. `bench/README.md` has the options and what each task tests.
-
-Then watch a real session and score its account of itself against the wire:
-
-```bash
-./bench/node22.sh serve/record-proxy.js --port 8081 --out session.jsonl
-# point your agent at http://127.0.0.1:8081, let it work, then:
-./bench/node22.sh bench/score-session.js session.jsonl --baseline <md5 list> --dir <work dir>
-```
 
 ## Layout
 
@@ -77,7 +88,7 @@ Runs anywhere, given an endpoint:
 | `bench/sandbox.js` | The in-memory filesystem offered to a model as tools, and the log of every call |
 | `bench/summarise.js` | Splits a results file by task class, which the console summary does not |
 | `bench/node22.sh` | Runs a bench script under Node 22. Resolves one rather than pinning a version |
-| `bench/test/` | Proofs that the checkers can go red, plus a mutation run requiring each to be killed by its own named arm |
+| `bench/test/` | Proofs that the checkers can go red, plus mutation runs for the task checks and session scorer |
 | `serve/record-proxy.js` | Sits between the agent and the model and records every tool call, every tool result and the model's own prose. The witness for a live session |
 | `serve/test/` | Proofs for the proxy, plus a mutation run requiring each to be killed by its own named arm |
 | `bench/score-session.js` | Scores a session's account of itself against the proxy log and against what changed on disk |
@@ -85,7 +96,7 @@ Runs anywhere, given an endpoint:
 | `serve/fixtures/localrun/` | The short fixture: a real off-by-one bug, a helper needing no change, and a decoy report from another day |
 | `serve/fixtures/localrun-long/` | The long fixture: four modules, a 4,000 line log, a project skill, and a step requiring a subagent |
 | `bench/probes/` | One-off scripts that answered a question the scored set could not, kept because a finding whose method is not on disk cannot be checked later |
-| `.github/workflows/proofs.yml` | Runs the four proof suites and both mutation runs on every push, all offline, so the badge above is this repo's own argument made checkable without cloning it |
+| `.github/workflows/proofs.yml` | Runs six proof commands and all three mutation runners on every push, all offline |
 | `ROADMAP.md` | The plan for taking this repo public, and why a model recommender is not on it |
 
 Windows, AMD and llama.cpp specific:
@@ -183,6 +194,22 @@ Regenerate any of the scored figures with:
 ```bash
 ./bench/node22.sh bench/summarise.js bench/results/*.json
 ```
+
+### Correctness repeat with Whisper on and off, 28 Aug 2026
+
+Each model ran the same 42 scored tasks at depth 0 and 25,000 with the resident
+q5 Whisper server on, then off. The on and off arms produced the same pass,
+fail and truncation counts for every model and depth.
+
+| Model | Depth 0, both arms | Depth 25,000, both arms |
+| --- | ---: | ---: |
+| gpt-oss-20b | 38 pass, 4 truncated | 42 pass |
+| Qwen3.5-9B | 30 pass, 6 fail, 6 truncated | 27 pass, 15 truncated |
+| Qwen3-Coder-30B-A3B | 36 pass, 6 fail | 30 pass, 12 fail |
+
+This repeat supports one narrow conclusion: the resident dictation server did
+not change the scored correctness result in these runs. It did not measure
+latency, throughput or VRAM use, so it says nothing about those costs.
 
 ## Watching a live session
 

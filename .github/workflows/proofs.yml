@@ -5,8 +5,8 @@ name: proofs
 # not, so the proof runs here on every push.
 #
 # Nothing in this job needs a GPU, a downloaded weight file or an endpoint.
-# Every suite is offline: prove-proxy starts its own stub upstream rather than
-# reaching a model, and the mutation runs edit a source file and restore it.
+# All six proof commands are offline: prove-proxy starts its own stub upstream
+# rather than reaching a model, and the three mutation runners restore source.
 #
 # It also exercises bench/node22.sh on a machine with no nvm at all, which is
 # the fallback arm that cannot be tested on the machine this was written on.
@@ -35,6 +35,12 @@ jobs:
       - name: the session scorer can go red
         run: ./bench/node22.sh bench/test/prove-scorer.js
 
+      - name: constructed scorer samples behave as labelled
+        run: ./bench/node22.sh bench/test/prove-samples.js
+
+      - name: the public documentation keeps its runnable front door
+        run: ./bench/node22.sh bench/test/prove-public-docs.js
+
       - name: the tool-use checkers can go red
         run: ./bench/node22.sh bench/test/prove-tools.js
 
@@ -51,6 +57,9 @@ jobs:
       # nothing.
       - name: every tool mutation is killed by its own arm
         run: ./bench/test/mutate-tools.sh
+
+      - name: every scorer mutation is killed by its own arm
+        run: ./bench/test/mutate-scorer.sh
 
       - name: every proxy mutation is killed by its own arm
         run: ./serve/test/mutate-proxy.sh

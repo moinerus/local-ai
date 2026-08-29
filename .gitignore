@@ -11,6 +11,7 @@ bin/*.dll
 # Runtime output
 logs/
 *.log
+*.err
 bench/results/*.json
 bench/results/*.csv
 
@@ -18,6 +19,10 @@ bench/results/*.csv
 # scratch from a run someone was iterating on. Without this the numbers a
 # decision was made on live only on one machine, which is where they die.
 !bench/results/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*.json
+
+# The 28 August paired runs are raw local output. Their path-safe summary is in
+# the documentation, so no file from that date is a public baseline.
+bench/results/2026-08-28-*
 
 # Recorded live sessions, which a bench result is not, so the dated exception
 # above must not reach them. A proxy log holds the whole conversation: every
@@ -31,6 +36,11 @@ bench/results/*.csv
 # root and write session.jsonl there, which nothing ignored. The rule has to
 # cover wherever the documented commands actually put the file.
 *.jsonl
+
+# These two files are constructed public fixtures, not recorded sessions.
+# Name each exception so another JSONL dropped under samples/ stays ignored.
+!samples/clean-account.jsonl
+!samples/mismatched-account.jsonl
 
 # Secrets and local overrides
 .env

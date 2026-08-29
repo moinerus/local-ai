@@ -1,438 +1,90 @@
-# Roadmap: taking this repo public
-
-Private as of 27 August 2026, and nothing here has been published. This file
-records the release plan so it can be picked up cold, months later, without
-rebuilding the reasoning.
-
-## Where it stands
-
-A redaction pass ran on 27 August 2026 across every tracked file and the whole
-commit history.
-
-**F1. There is no employer, client or colleague reference anywhere in the
-tree.** Zero matches for any work system, project name or ticket prefix. Both
-fixtures are wholly synthetic: the decoy report describes a made-up sorting bug
-in a file that exists only inside the fixture. The control for that scan fired,
-so the zero is a real zero rather than a broken query.
-
-**F2. No forbidden file has ever been committed. Narrower than it first read:
-see F4.** No session log, no `.log`, no `.gguf` and no
-`.env` has ever been committed on any branch. `.gitignore` landed early enough.
-The one deleted file, `serve/claude-local.ps1`, sets `ANTHROPIC_AUTH_TOKEN` to
-`local` against a keyless server, which is a placeholder rather than a secret.
-So visibility can be flipped on this repo rather than squashing into a fresh
-one, and the commit messages survive. They carry a fair share of the value here,
-because each one records what was wrong before it was right.
-
-**F3. The only blocker is hardcoded paths, and it is a portability problem
-rather than a privacy one.** Thirteen lines across eight files, listed under A1.
-A username in a path is not a secret. It only makes the repo unrunnable for
-anyone else.
-
-Re-run F1 and F2 against the working tree immediately before flipping, never
-against the last commit. A scan of a commit says nothing about what is staged
-beside it.
-
-**F4. The history carried what F2 never tested for, and it has been rewritten.**
-Re-running F1 and F2 on 28 August 2026 found both clean on their own terms: no
-employer or project vocabulary anywhere in the tree or in any commit message, no
-credential shapes, no forbidden file type ever committed. But F2 tested which
-files had been committed, not what was inside them. Nine of the twenty-six
-commits held absolute home paths, which W1 had removed from the tip and nothing
-had removed from the history behind it. Two `.pyc` files committed at one commit
-and removed at the next carried the same path in their bytecode, where no text
-scan would have seen it.
-
-Every commit was rewritten. The path forms map onto the ones `.env.example`
-already documents, so the history now agrees with the template rather than
-inventing a third convention. The two bytecode files went, and so did a stray
-file created by a mangled shell redirect, which took its commit with it and left
-twenty-five.
-
-The filter was proved before it was let near the repository, on four arms
-including one requiring it to exit non-zero and name the file and line for a
-path form no rule covered. It asserts on residue after rewriting rather than
-finishing quietly, because a silent miss leaves the path in a commit nobody
-opens again.
-
-Verified after: the scan is clean across all twenty-five commits with its control
-still firing, binaries included; no `.pyc` and no stray blob is reachable; and
-the tree at the tip was `f6bb861` both before and after the rewrite, so nothing
-anyone checks out changed. All six proof suites pass. The pre-rewrite mirror is
-kept off the repository.
-
-A first name in a path was never a secret, and the licence carries the full one.
-This was done because the paths are noise in a public history rather than because
-they were dangerous.
-
-## What goes public, ranked
-
-**P1. The session recorder and scorer.** `serve/record-proxy.js`,
-`bench/score-session.js`, `serve/run-live-session.sh`, both fixtures, and the
-proof and mutation suites under `serve/test/`. This is the piece with no
-equivalent elsewhere. Published work on local coding models scores the model's
-answer. This scores the model's account of itself against the wire record and
-against what changed on disk, and keeps three things apart that everyone else
-merges: what was asked for, what came back, and what changed. It also has the
-least platform coupling in the repo, because it works against any
-Anthropic-compatible endpoint and knows nothing about AMD, Vulkan or Windows.
-If only one thing goes out, it is this.
-
-**P2. The benchmark harness.** `bench/run-tasks.js`, `bench/tasks.js`,
-`bench/tasks-tools.js`, `bench/tasks-twins.js`, `bench/sandbox.js`,
-`bench/summarise.js` and `bench/test/`. Depth arms, a padding-shape control,
-every checker driven against a good and a bad fixture before any model runs,
-mutation runs requiring each arm to kill its own mutant, and the renamed twins
-for detecting recall. Most local model benchmarks are a scoring function nobody
-proved could go red. `bench/test/` is the argument that this one is not, and it
-is as much of the value as the harness itself.
-
-**P3. The measurements.** `bench/results/`, sixteen dated files and about 1.0 MB,
-plus the tables in `README.md`. These are the evidence behind every claim made
-about this work anywhere else, and a claim nobody can check is worth less than
-one they can.
-
-**P4. The launch scripts.** `serve/gptoss.ps1`, `serve/qwen.ps1`,
-`serve/qwen3coder.ps1`, `bench/vram.ps1`, `serve/status.ps1` and the patched
-chat template. Narrow audience, being an RX 9070 XT on Windows under Vulkan, but
-that audience has almost nothing written for it, and the `-dev Vulkan0` and
-`-ncmoe` findings are not on any page found while doing this work.
-
-## What stays private
-
-`.gitignore` is the control, it is already written, and its reasoning is inline.
-None of this is a manual step at release time.
-
-- Recorded sessions, `*.jsonl` at any depth. A proxy log holds every tool call,
-  every file the tools handed back, and the absolute path each came from. The
-  scored summary travels. The log stays on the machine that recorded it.
-- Model weights and binaries.
-- `logs/`, which holds server stdout.
-
-The dated exception in `.gitignore` keeps baseline result files and drops
-scratch runs. Confirm that rule still does what it claims before flipping,
-because a results file is the one thing in that directory meant to be published,
-and an ignore rule that over-matches would silently take P3 with it.
-
-## The model recommender
-
-**R1. This is the one item on the wish list that the repo's own findings argue
-against.** Every "will this model fit my card" calculator does headroom
-arithmetic against a spec-sheet memory figure and a published tokens-per-second
-number. The four central findings here are that this method was wrong on this
-machine four separate times: the desktop's own video memory use is a range
-rather than a number, negative headroom is not the refusal it reads as, file
-size never bound the sparse 30B once `-ncmoe` moved the experts into system RAM,
-and every published tokens-per-second figure is a depth-zero figure against a
-loss reaching 57% at working depth. The figures for all four are in `README.md`
-and are deliberately not repeated here, so that correcting one corrects it once.
-A recommender fed spec sheets reproduces the exact error this repo exists to
-correct.
-
-**R2. It is also one card, three models, one day.** That does not support a
-lookup table, and a lookup table is what a recommender is.
-
-**R3. The shape that survives both objections is a measurement tool, not a
-database.** Run `bench/vram.ps1` with nothing loaded, run `llama-bench` at two
-depths, then print what this machine can actually hold and how fast, with the
-naive arithmetic shown alongside so the gap between the two is visible. It
-recommends from the machine in front of it rather than from a specification.
-Most of it is existing scripts behind one entry point. Nothing has been built.
-
-## What decides whether this is useful to anyone else
-
-**The benchmark harness and the recording proxy have nothing to do with AMD,
-Windows, Vulkan or llama.cpp, and nothing in the repo says so.** `run-tasks.js`
-takes `--url` and `--model` and speaks OpenAI-compatible HTTP. The proxy sits on
-loopback and speaks the Anthropic API. Anyone running Ollama, vLLM or LM Studio
-on any card can use both, unchanged, today. But `README.md` opens with a table
-of one specific card's specifications, and the layout table lists a Windows-only
-PowerShell launcher and a platform-agnostic Node harness in the same column, so
-a reader gets three paragraphs in and concludes none of it applies to them.
-
-That framing is the difference between an audience of people who own an
-RX 9070 XT and an audience of people who run a local model. It costs an
-afternoon. It is worth more than the rest of the list below put together, which
-is why W7 to W9 sit above the licence in priority even though the licence is
-what makes publication legal.
-
-The second thing that decides it is W10, continuous integration. This repo's
-whole argument is that its checkers were proved able to go red. A reader cannot
-see that without running everything, and most will not. A green tick per push is
-what turns the claim into evidence, and all four suites already run offline.
-
-## Options for repo shape
-
-**O1, recommended. Flip this repo to public after W1 to W13.** The history is
-clean, and the findings are interlinked: a benchmark result means little without
-the memory measurement and the launch config beside it, and splitting them means
-maintaining the same machine description in more than one place.
-
-**O2. Extract P1 into its own repo now.** Widest audience and least platform
-coupling. Against it: this splits the evidence, needs a second README restating
-the whole setup, and costs real work before anyone has shown they want it.
-
-**O3. Both, in that order.** Publish as O1, and extract as O2 only if P1 draws
-interest. Extraction is cheap once it is wanted, and free if it never is.
-
-## Work before flipping
-
-Three groups. Clean is what makes publication safe, portable is what makes the
-repo runnable by anyone, and useful is what makes it worth finding. They
-supersede an earlier A1 to A5 list, which is folded in as W1 to W5.
-
-Mark each one done in place as it lands, so a cold pickup can tell what is left
-without reading the diff.
-
-### Clean
-
-**W1. Replace the thirteen hardcoded paths with environment variables and add
-`.env.example`.** In full, so this needs no rediscovery:
-
-| File | Line | What |
-| --- | ---: | --- |
-| `bench/node22.sh` | 20 | `NODE=` pinned to one nvm patch version |
-| `bench/test/mutate-tools.sh` | 17 | `REPO=` literal |
-| `serve/claude-local.sh` | 16 | comment naming a user profile path |
-| `serve/claude-local.sh` | 38, 39 | usage text naming launcher paths |
-| `serve/gptoss.ps1` | 85, 86 | `$Exe`, `$Model` |
-| `serve/qwen.ps1` | 89, 90 | `$Exe`, `$Model` |
-| `serve/qwen3coder.ps1` | 83, 84 | `$Exe`, `$Model` |
-| `serve/run-live-session.sh` | 31 | `REPO=` literal |
-| `serve/test/mutate-proxy.sh` | 22 | `REPO=` literal |
-
-**Done.** `LLAMA_EXE` and `MODEL_DIR` for the launchers, with no invented
-default: a typed fallback would be wrong on every machine but this one, and
-would fail as a missing file rather than as an unset variable, which is the
-error that tells someone what to do. `REPO` is derived as
-`$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)` rather than from
-`git rev-parse --show-toplevel`, which is what this said first: `node22.sh`
-already used the `BASH_SOURCE` idiom for the same reason, and it works in a
-checkout that is not a git repository. `claude-local.sh` now names
-`%USERPROFILE%\.wslconfig` and prints repo-relative launcher paths.
-
-**And `.env.example` was invisible to git, which the file list did not
-predict.** `.gitignore` carries `.env.*`, so the one file documenting the two
-variables every launcher now needs would never have been committed, and its
-absence would have read as having forgotten to write it. `!.env.example` is
-now there, proved both ways: the example is untracked and listed, and
-`.env.local` is still ignored.
-
-**W2. Re-run all four proof suites, both mutation runs, and one live session end
-to end after W1. Done.** A path change is precisely the class of edit that leaves
-every offline test green while breaking the thing that actually runs, and three
-of the edits above are inside the test harness itself.
-
-`prove-scorer` 13 arms, `prove-tools` all arms, `prove-refusal` all arms,
-`prove-proxy` all arms. `mutate-tools` 6 mutations and `mutate-proxy` 12, each
-killed by its own named arm, both restoring their source. Then a real session:
-llama-server started through the rewritten launcher and served the model out of
-`MODEL_DIR`, the recorder took it on 8081, and `run-live-session.sh` copied the
-fixture, ran its positive control, drove the session and ran the test after.
-
-The session itself failed, and that is the stronger result. The model wrote a
-report claiming it had fixed `src/parser.py`, the test still failed, and the
-scorer said why: `MISMATCH written: claimed ["src/parser.py"] which the record
-does not show`. It never made the edit. That is the original failure this whole
-repository was built to catch, caught by the instrument rather than by someone
-noticing, on the fourth recorded session and the first one where it happened.
-A clean pass would have proved the chain runs. This proves it still reports.
-
-**W3. Add a licence. Done.** MIT, copyright 2026. Worth recording that writing
-it needed a change elsewhere: the prose guard on this machine flags "in
-connection with" as a vague-connection tell, which is a phrase the MIT text
-contains, and rewording a standard licence to satisfy a prose check makes it a
-different licence. The guard now exempts `LICENSE`, `LICENCE`, `COPYING` and
-`NOTICE` by filename, proved both ways: the licence writes, and the same phrase
-in a file that is not a licence is still blocked.
-
-**W4. Add a scope paragraph to the top of `README.md`. Done**, as a "Scope of
-the numbers" section rather than a paragraph, and paired with W13. It says one
-card over two days, three models, and that the desktop's own memory use moved by
-more than 3 GB while the figures were being taken. It closes on the line that
-does the work: the tools are the reusable part, and the tables are evidence that
-the tools work.
-
-**W5. Flip visibility.** The owner's call, and no session does it on the owner's
-behalf. F1 and F2 were re-run against the working tree on 28 August 2026 and are
-recorded above, along with F4, which is what that re-run turned up. Re-run them
-again if anything lands between then and the flip.
-
-### Portable
-
-**W6. Stop `bench/node22.sh` pinning an nvm patch version. Done.** It named
-`v22.20.0`. It now takes `NODE22` if set, else the highest `v22.*` under
-`NVM_DIR`, else a `node` on `PATH` that reports v22 or newer, and exits 2 with
-an instruction when there is none. Both arms were run: it resolves v22.20.0
-unchanged on this machine and derives the repo root correctly when invoked from
-another directory, and with `NVM_DIR` and `HOME` pointed at nothing it exits 2
-and says what to set.
-
-**W7. State the prerequisites, which appeared nowhere. Done.** A "What you need"
-table with a row per use: the harness, its three executing code tasks, the proxy
-and scorer, a live recorded session, and the launch scripts. It also says that
-`LLAMA_EXE` and `MODEL_DIR` are read by the launch scripts and by nothing else,
-which is the question a reader would otherwise have to answer by grepping.
-
-**W8. Split the layout table into what runs anywhere and what is this machine.
-Done.** One table held a Windows-only PowerShell launcher beside a
-platform-agnostic Node harness, which is what hid W7 from a reader. Two tables
-now, and the portable one comes first. `tasks-twins.js`, `localrun-long/` and
-`status.ps1` were missing from the old table and are in.
-
-### Useful
-
-**W9. Reorder `README.md` for a reader who has never seen the machine. Done.**
-The order was machine, layout, measurements, with the runnable part below the
-tables. It is now: what the two tools are and that neither is AMD or Windows
-specific, scope of the numbers, what you need, five minutes, layout in two
-tables, the machine, then the readings. The opening paragraph no longer leads
-with a card nobody else owns.
-
-**W10. Add CI: a workflow running the four proof suites on push. Done.**
-`.github/workflows/proofs.yml`, ten steps on `ubuntu-latest` with Node 22:
-`prove-scorer`, `prove-tools`, `prove-refusal`, `prove-proxy`, both mutation
-runs, and a final `git diff --exit-code` asserting every mutation restored its
-source. All offline, `prove-proxy` starting its own stub upstream rather than
-reaching a model. A badge is in the README, which is the point: this repo's
-argument is that its checkers were proved able to go red, and until now a reader
-had to clone and run everything to see it.
-
-Three things this turned up. **The five shell scripts were not executable in
-git**, all mode 100644, because the authoring machine is Windows and does not
-store the bit, so `./bench/node22.sh` in the README quickstart would have failed
-on any fresh Linux or macOS clone. Now 100755, and `core.filemode false` here
-means it costs no local diff noise. **CI is the only place `node22.sh`'s PATH
-fallback gets exercised**, since this machine always has nvm, so the runner
-proves the arm that cannot be proved at home. And the clean-tree step was proved
-both ways before being trusted: exit 1 against a planted change, exit 0 after
-restoring it, so it is not a check that can only ever pass.
-
-**W11. Give `serve/` its own README for the proxy and scorer. Done.** They are the
-most novel thing here and were documented as a section of the root README, under
-a heading about one machine. A quickstart that does not assume Claude Code gets
-most of the benefit of extracting them into a separate repo, at a fraction of the
-cost, and makes that extraction easy later if it turns out to be wanted.
-
-Writing it found three things the code was wrong about rather than the prose.
-`bench/node22.sh` changes to the repository root before executing its argument,
-so every documented path has to be root-relative and the first draft's were not.
-`run-live-session.sh` still carried a header comment requiring a `/localrun/`
-segment in the work directory, a constraint the scorer dropped when it started
-deriving its prefix from `--dir`. And `.gitignore` covered session logs only
-under `bench/results/`, while the quickstart tells the reader to write
-`session.jsonl` at the repository root, where nothing ignored it. That last one
-is the whole privacy control failing at exactly the path the documentation
-recommends. It now ignores `*.jsonl` at any depth, proved both ways: three paths
-ignored, the dated result baseline still tracked.
-
-**W12. Put one copy-paste bench command against an arbitrary endpoint in the
-first screen of `README.md`. Done.** A "Five minutes" section with the bench
-command and the proxy pair, and the default ports for llama.cpp, Ollama and
-vLLM so `--url` is obvious. The command was run rather than typed: against a
-closed port it self-tests, reports the checker proved able to fail, then errors
-on the connection, which is the documented behaviour and proves the invocation
-form is right.
-
-**W13. Head the measurement tables with what they are. Done.** The heading is
-now "Readings from this machine, 26 Aug 2026" rather than "Measured on this
-machine", and W4's scope section sits above it. As written before, the tables
-read as claims about these models rather than readings from one card, which is
-the opposite of what the rest of the repo argues.
-
-### Sizing
-
-W1 to W13 are done except W5, which is the owner's.
-
-Original estimate, kept because it held: W1 and W2 about ninety minutes, the
-README pass roughly an hour, W10 and W11 about two hours, W3 and W4 minutes.
-Everything except W5 can be done without the owner.
-
-## Usable, which is not the same as releasable
-
-W1 to W13 made this repository clean, portable and provable. They did not make
-it usable, and the two were being conflated. The question that separated them,
-on 28 August 2026: what does a stranger actually do with this?
-
-**F5. Nothing here runs without setup.** The bench needs an OpenAI-compatible
-endpoint already serving a model. The proxy needs an agent already pointed at it
-and an md5 baseline the reader constructs. `run-live-session.sh` needs
-llama-server on Windows, WSL, Claude Code, and port 8081 specifically. There is
-no command in this repository that shows what it does without a GPU, a model or
-an agent, and the "Five minutes" section is not five minutes: its second command
-block carries placeholders, so it is a sketch rather than something to paste.
-
-**F6. The hook is real and it is buried.** The strongest thing here is one
-sentence: a coding agent wrote a report saying it fixed a file it never opened
-for editing, and this caught it mechanically without anyone reading the log. It
-sits at line 296 of `README.md`, under a heading about hardware, after four
-tables of video memory readings. The opening line describes the shelf rather
-than the thing on it.
-
-**F7. The scorer read the account from the wrong entry, and it is fixed.** Found
-while looking for something to build a zero-setup demo from.
-`score-session.js` took the model's report from the last log entry carrying any
-final text. A proxy left listening after a session ends records whatever reaches
-the port next, and both archived logs from 26 August carry two such entries
-behind the real account. The scorer read the last of them, could not parse it,
-and reported no account found while the account sat in the file. Neither log
-could be re-scored, and one is the evidence behind a claim in `README.md`.
-
-It now scans back for the first entry whose text parses as an account, meaning
-an object carrying `files_read` or `files_written`. A stray reply does not have
-that shape and a false account does, which is what makes selecting on shape
-safe. Where the account is not the last thing recorded, the output names the
-entry it came from.
-
-Four new arms in `prove-scorer.js`, seventeen in total. Two were run red against
-the unfixed scorer before the fix. One is the guard against over-fixing: a
-session that reported honestly and then reported falsely must still be scored on
-the later report, so scanning back must not walk past a later account to reach an
-earlier one. Independently corroborated, which is the part worth keeping: the
-archived session now scores as `omitted ["notes/2026-08-26-report.md"] which the
-record does show`, exactly what `README.md` recorded about that session from the
-live run eleven days earlier.
-
-### Work
-
-**W14. Ship a session log a stranger can score, with no model and no agent.**
-Two redacted logs under `samples/` with their baselines, one clean and one that
-mismatches, so the first command in `README.md` runs offline in about a second
-and the reader watches the tool tell them apart. Redaction is a path rewrite and
-the filter proved for F4 does it.
-
-One judgement call sits inside this. The real failing log from 27 August is gone,
-WSL cleared `/tmp`. Either construct the mismatching sample as a labelled
-fixture, which is what `bench/test/prove-scorer.js` does throughout, or capture a
-real one, which needs the runs D19 calls for anyway. Ship the constructed one
-labelled as constructed and swap in a real one when those runs happen.
-
-**W15. Rewrite the first screen of `README.md`** around F6 and the W14 command,
-and move the hardware tables below the fold.
-
-**W16. Add a mutation run for `score-session.js`.** It is the central checker in
-the repository and the only one without one. `mutate-tools.sh` and
-`mutate-proxy.sh` each require every mutation to be killed by its own named arm.
-The scorer has seventeen arms that can go red and nothing forcing each to be the
-arm that catches its own mutant. Four of the seventeen were proved by hand
-against the unfixed code on 28 August. The other thirteen have never been put
-through it.
-
-**W17. Fix `bench/README.md`. Done.** It told the reader to run
-`node bench/run-tasks.js` directly. Everything else in the repository routes
-through `bench/node22.sh`, which exists because a bare `node` here is the wrong
-version, and which changes to the repository root before executing its argument.
-Both facts are now stated next to the command.
-
-W16 is the one to do before W15, because W15 rewrites the front door around a
-claim that the checkers are proved, and the scorer is where that claim is
-thinnest.
-
-## Do not
-
-- Do not flip visibility on the strength of a scan older than the working tree.
-- Do not commit a session log, whatever the ignore rules happen to say that day.
-- Do not present the measurements as generalisable. They are one machine on one
-  day, and saying so is what makes the rest of it trustworthy.
-- Do not build the recommender as a spec-sheet lookup. See R1.
-- Do not extract the proxy into its own repo before W11 has been tried. See O2.
+# Roadmap
+
+local-ai has two reusable parts:
+
+- a fixed task benchmark for any OpenAI-compatible model endpoint
+- a recording proxy and scorer that compare an agent's report with its tool record
+
+The AMD and Windows launch scripts support one desktop. The benchmark and
+scorer are portable. Hardware readings in this repository come from one
+machine and are not claims about the models in general.
+
+## Current state
+
+The benchmark runs text, code and tool-use tasks at more than one context
+depth. Every checker sees a known-good and known-bad fixture before a model is
+called. A broken checker stops the run.
+
+The recording proxy captures tool calls, tool results and model prose. The
+session scorer keeps three questions separate:
+
+1. What did the model ask a tool to do?
+2. What result came back?
+3. What does the model later claim happened?
+
+The repository now includes two constructed sample records. One account
+matches its tool record. The other claims a file that was never written and
+exits 1 with a named mismatch. Both run offline.
+
+The scorer has 17 proof arms. Eight mutations disable its main decisions one
+at a time, and each mutation must be killed by the arm written for it. CI also
+runs the tool checker and proxy mutation suites.
+
+## Release checklist
+
+- [x] Remove private and machine-specific paths from tracked files.
+- [x] Keep model weights, binaries, secrets and recorded sessions ignored.
+- [x] Add an MIT licence.
+- [x] State the runtime and platform prerequisites.
+- [x] Split portable tools from machine-specific launch scripts.
+- [x] Add offline proof suites and mutation runs to CI.
+- [x] Add constructed scorer samples that need no model or endpoint.
+- [x] Put the offline scorer command on the first screen of README.md.
+- [x] Record the 28 August Whisper-on/off correctness repeat without a speed
+  or VRAM claim.
+- [x] Keep raw 28 August benchmark output local.
+- [ ] Re-run tracked-tree and full-history sensitive-data scans against the
+  final working tree.
+- [ ] Run the complete offline proof suite from a clean checkout.
+- [ ] Review the final public diff and GitHub Actions result.
+- [ ] Change repository visibility.
+
+The last four checks happen in that order. A clean scan from an older commit
+does not cover a new documentation edit.
+
+## What remains Andy's call
+
+Repository visibility is the owner's decision. The final review should show:
+
+- the exact files added since the last private commit
+- the commands and exit codes from every proof suite
+- any scan finding and why it is safe
+- the untracked local outputs that were deliberately excluded
+
+Changing visibility is not part of an automated release script.
+
+## Known limits
+
+- The public samples are constructed fixtures. They demonstrate the scorer,
+  not a real model's failure rate.
+- The task set supports decisions on this machine. It is not a general model
+  leaderboard.
+- A passing synthetic tool-use task does not prove a long coding session will
+  remain accurate.
+- The 28 August Whisper pairs matched on pass, fail and truncation count. The
+  pair did not measure latency, throughput or VRAM.
+- Windows launch scripts assume a llama.cpp build and local GGUF files supplied
+  through LLAMA_EXE and MODEL_DIR.
+
+## After release
+
+1. Watch whether readers use the scorer, benchmark, or machine launch scripts.
+   Split the scorer into its own repository only if that boundary proves useful.
+2. Add a real, safely constructed regression sample when a new scorer defect
+   is found. Do not publish a recorded work session.
+3. Expand the task set only when a real decision exposes a missing behaviour.
+   Each new checker needs good and bad fixtures before it can call a model.
+4. Repeat model measurements after runtime, quantisation or hardware changes.
+   Keep the date, context depth and resident desktop load beside every figure.
+5. Treat model recommendations as measured configuration choices, not names
+   copied from a specification table.

@@ -273,6 +273,23 @@ answers neither question.
 ./bench/node22.sh bench/summarise.js bench/results/*.json
 ```
 
+## Recorded paired correctness repeat, 28 Aug 2026
+
+Three models ran through llama.cpp v0.3.0-dev on the same RX 9070 XT. Each ran
+42 scored tasks at depth 0 and 25,000 with the resident q5 Whisper server on,
+then off.
+
+| Model | Depth 0, Whisper on and off | Depth 25,000, Whisper on and off |
+| --- | ---: | ---: |
+| gpt-oss-20b | 38 pass, 4 truncated | 42 pass |
+| Qwen3.5-9B | 30 pass, 6 fail, 6 truncated | 27 pass, 15 truncated |
+| Qwen3-Coder-30B-A3B | 36 pass, 6 fail | 30 pass, 12 fail |
+
+Every on/off pair matched on pass, fail and truncation count. This was a
+correctness repeat. It did not measure latency, throughput or VRAM use. The raw
+run output remains local because result files can carry machine paths and
+run-specific detail; this table is the path-safe record.
+
 ## Adding a task
 
 A task needs an `id`, a `klass`, either a `prompt` or a `turns` array, a
